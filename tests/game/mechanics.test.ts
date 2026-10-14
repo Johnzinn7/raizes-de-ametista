@@ -90,6 +90,10 @@ describe('inventory, terrain and checkpoints', () => {
   });
 });
 describe('traps, enemies and cooperation', () => {
+  it('contact kills immediately even if the enemy would move away on this tick', () => {
+    const s = createGame(fixture(base)); s.tick = 9; s.enemies = [{ x: 2, y: 1, direction: 'right', alive: true, kind: 'snake' }];
+    const next = step(s, { solo: { direction: 'right' } }); expect(next.players[0].deaths).toBe(1); expect(next.enemies[0].x).toBe(3);
+  });
   it('spikes have safe, warning and active phases', () => {
     const s = createGame(fixture(base)); const p = { x: 2, y: 1 };
     expect(spikePhase(s, p)).toBe('safe'); s.tick = 30; expect(spikePhase(s, p)).toBe('warning'); s.tick = 40; expect(spikePhase(s, p)).toBe('active');

@@ -62,7 +62,7 @@ export class Renderer {
       if (t === 'G' && state.gates[pointKey({ x, y })]) t = '.';
       if (t === '!') f = { safe: 0, warning: 2, active: 3 }[spikePhase(state, { x, y })];
       if (t === 'E') f = frame + (state.diamonds >= state.quota ? 4 : 0);
-      c.drawImage(this.atlas.tile(t, this.world, f, hash(x, y) % 4), x * tile, y * tile);
+      c.drawImage(this.atlas.tile(t, this.world, f, hash(x, y) % 12), x * tile, y * tile);
       if (t === '*' && this.effects) {
         const g = c.createRadialGradient(x * tile + 16, y * tile + 14, 3, x * tile + 16, y * tile + 14, 58);
         g.addColorStop(0, '#ffca6a28'); g.addColorStop(1, '#ffca6a00'); c.fillStyle = g; c.fillRect(x * tile - 42, y * tile - 44, 116, 116);

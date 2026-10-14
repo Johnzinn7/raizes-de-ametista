@@ -1,23 +1,27 @@
 # Registro dos marcos
 
-Os resultados abaixo ser√£o preenchidos ap√≥s a execu√ß√£o real dos comandos.
+Verifica√ß√µes reais no ambiente Windows em 14/10/2026. Cada marco teve build, testes e validate-levels aprovados antes do commit. Nos marcos M1‚ÄìM4 o validador utilizava a fase inicial; a campanha completa entrou no M5.
 
-## M1 ó n˙cleo determinÌstico
-Build Vite 8.3.4 aprovado; 5 testes Vitest 5.0.4 aprovados; fixture inicial solucionada por BFS (85 estados, 12 aÁıes). npm audit: zero vulnerabilidades. A campanha completa entra no M5.
+## M1 ‚Äî n√∫cleo determin√≠stico
 
+Build Vite 8.3.4 aprovado; cinco testes Vitest 5.0.4 aprovados. Fixture inicial solucionada por BFS: 85 estados e 12 a√ß√µes. npm audit: zero vulnerabilidades.
 
-## M2 ó render, c‚mera e animaÁıes
-Build aprovado (34 kB JS, 14 kB CSS antes de gzip); 5 testes aprovados; BFS inicial aprovado. Canvas com atlas em runtime, c‚mera interpolada, sprites direcionais e estados de aÁ„o, partÌculas, ·gua, portais e tochas animados. VerificaÁ„o de navegador fica registrada no marco final com a campanha completa.
+## M2 ‚Äî render, c√¢mera e anima√ß√µes
 
+Build aprovado (34 kB JS e 14 kB CSS sem gzip); cinco testes e BFS inicial aprovados. Canvas com atlas procedural, c√¢mera interpolada, sprites direcionais, part√≠culas, √°gua, portais e tochas animadas.
 
-## M3 ó mec‚nicas e inimigos
-Build aprovado; 45 testes aprovados (empurrıes em quatro direÁıes, gravidade, esmagamento, pilhas, buracos, pontes, fogo, gelo, cores de chave, checkpoints, estrelas, teleportes, circuitos, espinhos, dardos, cobras, morcegos e co-op). BFS inicial aprovado.
+## M3 ‚Äî mec√¢nicas e inimigos
 
+Build, 45 testes e BFS inicial aprovados. Cobertura de empurr√µes nas quatro dire√ß√µes, gravidade, esmagamento, pilhas, buracos, pontes, fogo, gelo, chaves, checkpoints, estrelas, teleportes, circuitos, espinhos, dardos, cobras, morcegos e co-op.
 
-## M4 ó servidor multiplayer
-Build aprovado; 52 testes aprovados, incluindo HTTP e dois WebSockets reais. Salas de quatro letras, prontid„o, emojis, validaÁ„o de intenÁıes, co-op autoritativo, corrida com mapas separados e ranking, pausa do anfitri„o e reconex„o de 30 s. BFS inicial aprovado.
+## M4 ‚Äî servidor multiplayer
 
+Build, 52 testes e BFS inicial aprovados. Integra√ß√£o com HTTP e dois WebSockets reais; snapshots iguais, corrida com mundos separados, autoridade de movimentos, prontid√£o, reconex√£o, expira√ß√£o e controle do anfitri√£o.
 
-## M5 ó campanha, editor e validador
-Build aprovado; 55 testes aprovados; 20/20 fases de 25◊25 solucionadas pelo BFS, coletando todas as gemas comuns sem morrer. Entre 5.919 e 44.211 estados por fase. Editor com pintura, teste imediato, JSON e validaÁ„o em worker. Variantes cooperativas acrescentam cofres com placas mantidas por um parceiro. Chromium abriu o menu e o tabuleiro sem erro de JavaScript; capturas locais em .tools.
+## M5 ‚Äî campanha, editor e validador
 
+Build e 55 testes aprovados. Todas as 20 fases de 25√ó25 solucionadas pelo BFS, coletando todas as gemas comuns sem morrer; de 5.919 a 44.211 estados por fase. Editor com pintura, teste imediato, JSON e valida√ß√£o em worker. Doze cofres cooperativos. Menu e tabuleiro abertos no Chromium sem erro de JavaScript.
+
+## M6 ‚Äî √°udio, interface e polimento
+
+Build, 56 testes Vitest e 20/20 fases aprovados. Seis testes Playwright aprovados em 19,3 s contra o servidor de produ√ß√£o: campanha solo resolvida por teclado, pausa, vit√≥ria e progresso; co-op e corrida em duas abas com snapshots comparados por sequ√™ncia e reconex√£o por recarga; op√ß√µes e remapeamento; editor; toque e layout de celular. Uma execu√ß√£o anterior foi invalidada por recarga do Vite durante edi√ß√£o; a su√≠te final usa um servidor de produ√ß√£o isolado.

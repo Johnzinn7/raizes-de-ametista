@@ -115,6 +115,8 @@ function move(s: GameState, p: Player, direction: Direction) {
     const target = pair?.find(t => !same(t, p));
     if (target && !occupied(s, target, p) && !s.rocks.some(r => same(r, target))) { Object.assign(p, target); p.teleportLock = true; event(s, 'power', p); }
   } else if (tile !== 't') p.teleportLock = false;
+  const landed = at(s, p.x, p.y);
+  if (landed === 'h' || landed === '^' || (landed === '!' && spikePhase(s, p) === 'active') || enemyAt(s, p) || s.darts.some(d => same(d, p))) kill(s, p);
 }
 function usePower(s: GameState, p: Player, action: 'fire' | 'ice') {
   const [dx, dy] = DIRECTIONS[p.direction], dest = { x: p.x + dx, y: p.y + dy }, tile = at(s, dest.x, dest.y);
@@ -188,7 +190,7 @@ export function step(previous: GameState, intents: Record<string, Intent> = {}):
     if (s.tick >= p.nextMove) {
       const intent = intents[p.id];
       if (intent?.direction && DIRECTIONS[intent.direction]) move(s, p, intent.direction);
-      if (intent?.action) usePower(s, p, intent.action);
+      if (intent?.action && !p.deadUntil) usePower(s, p, intent.action);
       if (intent?.direction || intent?.action) p.nextMove = s.tick + CONFIG.moveMs / CONFIG.tickMs;
     }
   }

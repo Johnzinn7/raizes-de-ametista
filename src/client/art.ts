@@ -68,6 +68,10 @@ export class Atlas {
     const w = WORLDS[world];
     rect(c, w.floor, 0, 0, 32, 32);
     for (let i = 0; i < 9; i++) { const n = hash(i + variant * 11, world + 4); rect(c, i % 2 ? '#ffffff07' : '#00000015', n % 31, n % 29, 2 + n % 3, 1); }
+    if (variant % 4 === 2 && tile !== '#') {
+      for (let i = 0; i < 4; i++) { rect(c, '#71865b22', 1 + i * 7, 29 - i * 5, 6, 1); rect(c, '#93a96518', 3 + i * 7, 25 - i * 5, 1, 5); }
+      rect(c, '#71865b22', 4, 3, 6, 1); rect(c, '#71865b22', 9, 3, 1, 5);
+    }
     if (tile === '#') {
       rect(c, w.dark, 0, 0, 32, 32);
       for (let row = 0; row < 2; row++) for (let col = -1; col < 3; col++) {
@@ -85,12 +89,25 @@ export class Atlas {
         poly(c, '#80704a', [18, 0, 21, 0, 18, 10, 12, 18, 11, 32, 9, 32, 11, 17]);
         rect(c, '#a08b59', 17, 1, 1, 8);
       }
+      if (variant === 6) {
+        rect(c, '#19291f', 7, 2, 19, 29); rect(c, w.dark, 9, 3, 15, 27);
+        poly(c, w.stone, [11, 28, 11, 17, 10, 11, 13, 5, 21, 5, 24, 11, 22, 17, 23, 28]);
+        rect(c, w.light, 13, 7, 7, 2); rect(c, w.dark, 13, 12, 3, 2); rect(c, w.dark, 20, 12, 2, 2);
+        rect(c, '#9dceb2', 16, 20, 3, 3); rect(c, w.light, 9, 28, 16, 2);
+      }
+      if (variant === 9 || variant === 10) {
+        for (let i = 0; i < 4; i++) { rect(c, '#355c34', 4 + i * 6, 0, 1, 5 + i * 4); rect(c, w.leaf, 2 + i * 6, 3 + i * 3, 3, 2); rect(c, '#93a965', 5 + i * 6, 5 + i * 3, 2, 2); }
+      }
     } else if (tile === ',' || tile === 'X') {
-      for (let i = 0; i < (tile === 'X' ? 12 : 7); i++) {
-        const n = hash(i + variant, 13), x = 2 + n % 22, y = 4 + (n >>> 4) % 22, sway = frame % 2;
-        rect(c, '#172a20', x - 1, y - 1, 10, 6);
-        poly(c, i % 2 ? w.leaf : '#3f7447', [x, y + 4, x + 3 + sway, y - 2, x + 8, y, x + 6, y + 5]);
-        rect(c, '#a1be63', x + 2, y, 3, 1);
+      for (let i = 0; i < (tile === 'X' ? 6 : 4); i++) {
+        const n = hash(i + variant, 13), x = 4 + n % 19, y = 12 + (n >>> 4) % 12, sway = frame % 2;
+        poly(c, '#122b1c', [x - 5, y, x - 2, y - 10, x + 3, y - 13, x + 9, y - 7, x + 11, y + 2, x + 3, y + 7]);
+        rect(c, '#7b9a4b', x + 2 + sway, y - 8, 2, 14);
+        for (let j = 0; j < 4; j++) {
+          poly(c, j % 2 ? w.leaf : '#3e7945', [x + 2 + sway, y + 3 - j * 3, x - 4, y - 2 - j * 3, x - 3, y - 5 - j * 3, x + 3 + sway, y - j * 3]);
+          poly(c, j % 2 ? '#5c9c4f' : w.leaf, [x + 3 + sway, y + 4 - j * 3, x + 10, y - 1 - j * 3, x + 9, y - 4 - j * 3, x + 3 + sway, y - j * 3]);
+          rect(c, '#aecb6b', x - 2, y - 4 - j * 3, 2, 1);
+        }
       }
     } else if (tile === 'd' || tile === 'r' || tile === 's') diamond(c, tile === 'd' ? '#bb8df5' : '#fa899c', tile !== 'd', frame);
     else if (tile === '~' || tile === '=') {
