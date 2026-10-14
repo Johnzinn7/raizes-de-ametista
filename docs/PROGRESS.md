@@ -13,3 +13,7 @@ Build aprovado (34 kB JS, 14 kB CSS antes de gzip); 5 testes aprovados; BFS inic
 ## M3 — mecânicas e inimigos
 Build aprovado; 45 testes aprovados (empurrões em quatro direções, gravidade, esmagamento, pilhas, buracos, pontes, fogo, gelo, cores de chave, checkpoints, estrelas, teleportes, circuitos, espinhos, dardos, cobras, morcegos e co-op). BFS inicial aprovado.
 
+
+## M4 — servidor multiplayer
+Build aprovado; 52 testes aprovados, incluindo HTTP e dois WebSockets reais. Salas de quatro letras, prontidão, emojis, validação de intenções, co-op autoritativo, corrida com mapas separados e ranking, pausa do anfitrião e reconexão de 30 s. BFS inicial aprovado.
+
