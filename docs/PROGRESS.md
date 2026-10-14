@@ -17,3 +17,7 @@ Build aprovado; 45 testes aprovados (empurrões em quatro direções, gravidade, es
 ## M4 — servidor multiplayer
 Build aprovado; 52 testes aprovados, incluindo HTTP e dois WebSockets reais. Salas de quatro letras, prontidão, emojis, validação de intenções, co-op autoritativo, corrida com mapas separados e ranking, pausa do anfitrião e reconexão de 30 s. BFS inicial aprovado.
 
+
+## M5 — campanha, editor e validador
+Build aprovado; 55 testes aprovados; 20/20 fases de 25×25 solucionadas pelo BFS, coletando todas as gemas comuns sem morrer. Entre 5.919 e 44.211 estados por fase. Editor com pintura, teste imediato, JSON e validação em worker. Variantes cooperativas acrescentam cofres com placas mantidas por um parceiro. Chromium abriu o menu e o tabuleiro sem erro de JavaScript; capturas locais em .tools.
+

@@ -8,6 +8,7 @@ import { modal, toast } from './ui';
 import { mountShell } from './shell';
 import { Network } from './network';
 import { Lobby } from './lobby';
+import { Editor } from './editor';
 
 const files = import.meta.glob<Level>('../../levels/*.json', { eager: true, import: 'default' });
 const levels = Object.values(files).sort((a, b) => a.id.localeCompare(b.id));
@@ -16,6 +17,7 @@ const app = mountShell(); document.title = GAME_NAME;
 const renderer = new Renderer(app.querySelector('canvas')!);
 const input = new Input(); input.bindTouch(app);
 const network = new Network(), lobby = new Lobby(network, levels);
+const editor = new Editor(level => start(level));
 network.onStatus = message => toast(message);
 network.onMessage = message => {
   if (message.type === 'error') toast(message.message);
@@ -62,7 +64,7 @@ app.querySelector('#fullscreen')!.addEventListener('click', () => { if (document
 app.querySelector('#theme')!.addEventListener('click', () => document.documentElement.classList.toggle('light'));
 app.querySelectorAll('[data-view]').forEach(el => el.addEventListener('click', () => {
   const view = (el as HTMLElement).dataset.view;
-  if (view === 'play') start(); else if (view === 'multi') lobby.open(); else if (view === 'credits') modal('Feito para explorar', `<p>${GAME_NAME} é uma aventura original. Arte procedural em Canvas e sons sintetizados, sem assets externos.</p><p>Exploradores: Lia e Nilo. Um templo imaginário, muitos caminhos possíveis.</p>`); else toast('Esta parte da expedição está sendo preparada.');
+  if (view === 'play') start(); else if (view === 'multi') lobby.open(); else if (view === 'editor') editor.open(); else if (view === 'credits') modal('Feito para explorar', `<p>${GAME_NAME} é uma aventura original. Arte procedural em Canvas e sons sintetizados, sem assets externos.</p><p>Exploradores: Lia e Nilo. Um templo imaginário, muitos caminhos possíveis.</p>`); else toast('Esta parte da expedição está sendo preparada.');
 }));
 app.querySelector('#menu-multi')!.addEventListener('click', () => lobby.open());
 let lastTick = performance.now(), winShown = false;

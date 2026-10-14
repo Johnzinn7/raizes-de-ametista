@@ -26,9 +26,11 @@ export function validateLevel(level: Level): string[] {
   if (!Array.isArray(level.circuits) || !Array.isArray(level.teleports)) return [...errors, 'Circuitos ou teleportes ausentes.'];
   const validPoint = (p: Point) => p && Number.isInteger(p.x) && Number.isInteger(p.y) && p.x >= 0 && p.y >= 0 && p.x < w && p.y < level.map.length;
   for (const c of level.circuits) {
-    if (!Array.isArray(c.gates) || !Array.isArray(c.triggers) || !c.triggers.length || [...c.gates, ...c.triggers, ...(c.traps ?? [])].some(p => !validPoint(p))) errors.push('Circuito inválido.');
+    if (!c || !Array.isArray(c.gates) || !Array.isArray(c.triggers) || (c.traps !== undefined && !Array.isArray(c.traps)) || !c.triggers.length || [...c.gates, ...c.triggers, ...(c.traps ?? [])].some(p => !validPoint(p))) errors.push('Circuito inválido.');
   }
   for (const pair of level.teleports) if (!Array.isArray(pair) || pair.length !== 2 || pair.some(p => !validPoint(p) || level.map[p.y][p.x] !== 't')) errors.push('Par de teleportes inválido.');
+  if (typeof level.name !== 'string' || typeof level.id !== 'string' || typeof level.hint !== 'string') errors.push('Nome, identificador ou dica inválidos.');
+  if (level.coopVariant && (!Array.isArray(level.coopVariant.tiles) || !Array.isArray(level.coopVariant.circuits) || level.coopVariant.tiles.some(p => !validPoint(p) || typeof p.tile !== 'string' || p.tile.length !== 1))) errors.push('Variante cooperativa inválida.');
   return errors;
 }
 export function createGame(level: Level, ids = ['solo'], mode: GameState['mode'] = 'solo'): GameState {
@@ -89,7 +91,7 @@ function move(s: GameState, p: Player, direction: Direction) {
   let pushed = false;
   if (rock) {
     const next = { x: rock.x + dx, y: rock.y + dy };
-    if (!'.=h~'.includes(at(s, next.x, next.y)) || occupied(s, next) || enemyAt(s, next) || s.rocks.some(r => same(r, next))) return;
+    if (!'.=h~p'.includes(at(s, next.x, next.y)) || occupied(s, next) || enemyAt(s, next) || s.rocks.some(r => same(r, next))) return;
     Object.assign(rock, next, { falling: false });
     if (rockSink(s, rock)) s.rocks = s.rocks.filter(r => r !== rock);
     pushed = true; event(s, 'push', dest);
@@ -127,7 +129,7 @@ function gravity(s: GameState) {
     const next = { x: rock.x, y: rock.y + 1 }, tile = at(s, next.x, next.y);
     const victim = s.players.find(p => !p.deadUntil && !p.exited && same(p, next));
     const foe = enemyAt(s, next);
-    if (!'.=h~'.includes(tile) || s.rocks.some(r => r !== rock && same(r, next)) || (victim && !rock.falling) || (foe && !rock.falling)) {
+    if (!'.=h~p'.includes(tile) || s.rocks.some(r => r !== rock && same(r, next)) || (victim && !rock.falling) || (foe && !rock.falling)) {
       if (rock.falling) event(s, 'land', rock);
       rock.falling = false; continue;
     }

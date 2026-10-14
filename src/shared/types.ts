@@ -6,6 +6,8 @@ export interface Level {
   id: string; name: string; world: number; index: number; quota: number; targetSeconds: number;
   hint: string; map: string[]; circuits: Circuit[]; teleports: [Point, Point][];
   solution?: string; coopSolution?: string; coopOnly?: boolean;
+  mechanic?: string;
+  coopVariant?: { tiles: (Point & { tile: string })[]; circuits: Circuit[] };
 }
 export interface Intent { direction?: Direction; action?: 'fire' | 'ice'; }
 export interface Player extends Point {
