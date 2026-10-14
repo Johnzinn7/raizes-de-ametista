@@ -7,3 +7,4 @@ test-results/
 data/
 *.log
 .env
+release/

@@ -13,7 +13,9 @@
     "test": "node node_modules/vitest/vitest.mjs run",
     "validate-levels": "node --import tsx scripts/validate-levels.ts",
     "test:e2e": "node node_modules/@playwright/test/cli.js test",
-    "check": "npm run build && npm test && npm run validate-levels"
+    "check": "npm run build && npm test && npm run validate-levels",
+    "benchmark": "node --import tsx scripts/benchmark.ts",
+    "package": "node --import tsx scripts/package.ts"
   },
   "dependencies": {
     "tsx": "^4.23.15",

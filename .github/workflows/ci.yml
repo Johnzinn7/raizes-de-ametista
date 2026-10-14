@@ -1,0 +1,19 @@
+name: Temple checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  game:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: npm run validate-levels
+      - run: node node_modules/@playwright/test/cli.js install --with-deps chromium
+      - run: npm run test:e2e

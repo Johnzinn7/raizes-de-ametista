@@ -23,7 +23,10 @@ export class Lobby {
     const el = modal('Seu ponto de encontro', `<div class="eyebrow" style="text-align:center">COMPARTILHE ESTE CÓDIGO</div><div class="room-code" data-testid="room-code">${room.code}</div><p style="text-align:center">${room.mode === 'coop' ? 'Cooperativo' : 'Corrida'} · ${escapeHTML(this.levels.find(l => l.id === room.levelId)?.name)}</p>${room.players.map(p => `<div class="player-card"><i class="avatar-dot" style="--player-color:${p.color}"></i><b>${escapeHTML(p.name)}</b><span>${p.connected ? p.ready ? '✓ Pronto' : 'Escolhendo a mochila…' : 'Reconectando…'}</span></div>`).join('')}${room.players.length < 2 ? '<p class="empty-state">Esperando o segundo explorador… Abra outra aba e entre com o código acima.</p>' : ''}<div class="modal-actions"><button class="primary" id="ready">${me?.ready ? 'Ainda não estou pronto' : 'Estou pronto'}</button><button class="secondary" id="copy-code">Copiar código</button><button class="secondary" id="leave-room">Sair da sala</button></div><div class="emojis">${EMOJIS.map(e => `<button data-emoji="${e}" aria-label="Enviar ${e}">${e}</button>`).join('')}</div><div class="chat-log" aria-live="polite" id="chat-log"></div>`);
     el.classList.add('lobby');
     el.querySelector('#ready')!.addEventListener('click', () => this.network.send({ type: 'ready', ready: !me?.ready }));
-    el.querySelector('#copy-code')!.addEventListener('click', () => void navigator.clipboard?.writeText(room.code).then(() => toast('Código copiado.')).catch(() => toast(`Código da sala: ${room.code}`)));
+    el.querySelector('#copy-code')!.addEventListener('click', () => {
+      if (!navigator.clipboard) { toast(`Código da sala: ${room.code}`); return; }
+      void navigator.clipboard.writeText(room.code).then(() => toast('Código copiado.')).catch(() => toast(`Código da sala: ${room.code}`));
+    });
     el.querySelector('#leave-room')!.addEventListener('click', () => { this.network.leave(); el.remove(); });
     el.querySelectorAll<HTMLElement>('[data-emoji]').forEach(button => button.onclick = () => this.network.send({ type: 'emoji', emoji: button.dataset.emoji! }));
   }

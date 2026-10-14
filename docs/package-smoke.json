@@ -1,0 +1,10 @@
+{
+  "date": "2026-10-14",
+  "archiveIntegrity": "Python zipfile CRC verification passed",
+  "installation": "npm ci --omit=dev: 4 production packages, zero vulnerabilities",
+  "startup": "npm start from extracted archive",
+  "httpStatus": 200,
+  "health": true,
+  "browser": "Chromium: solo input collects first diamond, no JavaScript errors",
+  "node": "v24.22.0"
+}

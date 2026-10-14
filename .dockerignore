@@ -1,0 +1,14 @@
+.git
+.tools
+node_modules
+web-dist
+dist
+build
+assets
+resources
+third_party
+wallpaper engine
+wallpapers
+data
+test-results
+release

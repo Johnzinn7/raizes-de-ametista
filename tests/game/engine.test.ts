@@ -6,6 +6,16 @@ import type { Level, GameState, Intent } from '../../src/shared/types';
 export const level = (map: string[], extra: Partial<Level> = {}): Level => ({ id: 'test', name: 'Teste', world: 0, index: 1, quota: 0, targetSeconds: 120, hint: '', map, circuits: [], teleports: [], ...extra });
 export function ticks(state: GameState, count: number, intent: Intent = {}): GameState { for (let i = 0; i < count; i++) state = step(state, { [state.players[0].id]: intent }); return state; }
 describe('deterministic grid core', () => {
+  it('replays identically after JSON transport, including autonomous timers', () => {
+    let a = createGame(level(['#########','#@.d.O.E#','#....!..#','#n......#','#########'], { quota: 1 }));
+    let b = JSON.parse(JSON.stringify(a)) as GameState;
+    const directions = ['right', 'down', 'left', 'up'] as const;
+    for (let i = 0; i < 240; i++) {
+      const intent = { solo: { direction: directions[Math.floor(i / 15) % 4] } };
+      a = step(a, intent); b = step(JSON.parse(JSON.stringify(b)), intent);
+      expect(a).toEqual(b);
+    }
+  });
   it('is pure and reproducible', () => {
     const a = createGame(level(['#######','#@.,dE#','#.....#','#.....#','#######']));
     const before = JSON.stringify(a);

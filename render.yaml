@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: raizes-de-ametista
+    runtime: node
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build && npm test && npm run validate-levels
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 24.22.0
+      - key: NODE_ENV
+        value: production
