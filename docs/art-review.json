@@ -1,0 +1,17 @@
+{
+  "walkFrames": [
+    8,
+    8,
+    8,
+    8
+  ],
+  "idleFrames": 4,
+  "transitionVisible": true,
+  "clearingFinished": true,
+  "duplicateSafe": true,
+  "effectsOff": true,
+  "removedFoliage": true,
+  "pureRender": true,
+  "cacheWraps": true,
+  "recolorWorks": true
+}

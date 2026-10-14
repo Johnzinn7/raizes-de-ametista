@@ -17,3 +17,4 @@ jobs:
       - run: npm run validate-levels
       - run: node node_modules/@playwright/test/cli.js install --with-deps chromium
       - run: npm run test:e2e
+      - run: npm run review-art

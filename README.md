@@ -82,12 +82,14 @@ npm run benchmark
 
 `npm run check` reúne build, Vitest e validação. A suíte de navegador usa o **build existente** servido por `npm start` em porta isolada; execute build antes dela. O CI instala Chromium e executa todos esses checks, exceto o benchmark dependente da máquina.
 
-Evidências de implementação: 57 testes de regras/rede, oito cenários de navegador e 20/20 fases aprovadas, com reprodução de cada solução. As suítes concluem uma fase inteira no co-op e na corrida em dois navegadores, incluindo vitória, derrota e registro no ranking. Resultados estão em [PROGRESS.md](docs/PROGRESS.md). O benchmark local registrou 60,0 FPS, p95 de 16,8 ms, em 299 intervalos por perfil desktop e viewport móvel. Veja [dados brutos](docs/benchmark.json). O perfil móvel usa emulação de viewport/toque no desktop; hardware físico de celular não foi medido.
+Evidências de implementação: 57 testes de regras/rede, oito cenários de navegador e 20/20 fases aprovadas, com reprodução de cada solução. As suítes concluem uma fase inteira no co-op e na corrida em dois navegadores, incluindo vitória, derrota e registro no ranking. Resultados estão em [PROGRESS.md](docs/PROGRESS.md). O benchmark local registrou 60,0 FPS, p95 de 16,7 ms, em 299 intervalos por perfil desktop e viewport móvel. Veja [dados brutos](docs/benchmark.json). O perfil móvel usa emulação de viewport/toque no desktop; hardware físico de celular não foi medido.
 
 ## Empacotar e modificar
 
 `npm run package` cria `release/raizes-de-ametista.zip` e seu SHA-256. O pacote inclui fontes, build, fases, documentação, testes e configurações de deploy. Ele exclui dependências instaladas, sessões e ferramentas portáteis.
 
-Troque o nome em `GAME_NAME`, em `src/shared/config.ts`. Tempos, tamanho de tile, limites de uso e parâmetros de inimigos estão no mesmo arquivo. Toda a arte é gerada em um atlas Canvas em runtime, com contornos, paletas por mundo e animações; `src/client/art.ts` contém os desenhos. O áudio original é sintetizado em `src/client/audio.ts`, com quatro melodias e efeitos sem arquivos externos.
+Troque o nome em `GAME_NAME`, em `src/shared/config.ts`. Tempos, tamanho de tile, limites de uso e parâmetros de inimigos estão no mesmo arquivo. Toda a arte é gerada em um atlas Canvas em runtime: `src/client/art.ts` reúne objetos e cache, `src/client/explorer.ts` desenha as poses do explorador e `src/client/textures.ts` desenha pedra, raízes, piso e folhagem. O áudio original é sintetizado em `src/client/audio.ts`, com quatro melodias e efeitos sem arquivos externos.
+
+A revisão visual inclui perfil lateral, braços sobrepostos, oito poses de caminhada por direção, escalada ao subir/descer, respiração e folhagem que se abre e se desfaz ao atravessar. Abra [a prévia animada](docs/art-preview.html) diretamente no navegador para examinar as poses. `npm run review-art` regenera essa prévia, [a prancha de sprites](docs/screenshots/explorer-study.png) e [a sequência de folhagem](docs/screenshots/foliage-clearing.png), além de verificar os efeitos no renderizador real. Esse comando usa Chromium do Playwright, instalado com `node node_modules/@playwright/test/cli.js install chromium`.
 
 A licença MIT na raiz aplica-se ao jogo, seus desenhos, sons sintetizados e documentação. Bibliotecas de terceiros mantêm suas próprias licenças.

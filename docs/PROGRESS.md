@@ -37,3 +37,15 @@ Benchmark Chromium headless no desktop: 60,0 FPS, p95 e máximo de 16,8 ms em 29
 ZIP criado com Node/zlib e SHA-256; integridade CRC conferida por uma implementação independente (Python zipfile). O pacote foi extraído em diretório novo, recebeu apenas `npm ci --omit=dev` (quatro pacotes de produção, zero vulnerabilidades) e executou `npm start`. HTTP 200, health check e coleta de diamante por teclado no Chromium aprovados, sem erros de JavaScript. Evidência em `package-smoke.json`.
 
 README, decisões, legenda/editor, hospedagem LAN/Render/Docker, licença com escopo do jogo e workflow CI incluídos. Docker não está instalado neste ambiente, portanto a imagem não foi executada. A configuração Render e o workflow foram preparados; não houve publicação externa nem execução no GitHub Actions.
+
+## Revisão visual — 14/10/2026
+
+Explorador redesenhado em 64 × 64, com perfil lateral, braço distante atrás do tronco, mochila, roupa sombreada e braço próximo na frente. Oito poses distintas em cada direção; subida e descida alternam braços e joelhos em sentidos opostos. Respiração em ciclo de 2,16 s com deslocamento de cabeça e ombros, expansão do tronco, pés apoiados e piscar. A câmera aproxima o tabuleiro para tornar esses detalhes legíveis no desktop e no celular.
+
+Texturas originais de alvenaria irregular, pedra lascada, fissuras, musgo, raízes e nichos; pisos com vinhas e fragmentos de pedra; folhagem densa nas quatro paletas. Diamantes, pedras, baús, água e tochas ganharam detalhes. Ao atravessar a folhagem, frondes se abrem por 480 ms, passam à frente das pernas e se dispersam em folhas giratórias. A remoção lógica continua imediata.
+
+Build aprovado; 57 testes Vitest e 20/20 fases BFS aprovados; oito cenários Playwright passaram em 1,3 minuto, incluindo conclusão de co-op/corrida em duas abas, sincronização, reconexão e toque. `review-art` confirmou oito imagens de caminhada distintas por direção, variação do idle, transição visível e completamente encerrada, idempotência para eventos repetidos, opção de efeitos desligados, recoloração, cache limitado e ausência de mutação da simulação. Evidências em `art-review.json` e nas três novas pranchas em `screenshots/`.
+
+A prévia `art-preview.html` foi aberta diretamente como arquivo local no Chromium: animação, botão de pausa e ausência de erros de JavaScript confirmados. O CI inclui o comando de revisão visual após instalar Chromium; a execução remota do workflow não foi realizada.
+
+Benchmark do build atualizado: 60,0 FPS, p95 de 16,7 ms e máximo de 16,8 ms, em 299 intervalos tanto no desktop quanto no viewport móvel emulado. Os números são uma amostra local em Chromium headless, não uma medição em celular físico. ZIP atualizado com fontes, build, documentação e prévia visual.
