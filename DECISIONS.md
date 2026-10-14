@@ -1,7 +1,7 @@
 # Decisões de implementação
 
 1. Nome original: Raízes de Ametista; a constante `GAME_NAME` em `src/shared/config.ts` é a fonte do título.
-2. Preservar a engine C++ e seu `dist`; arquivos web usam `src/client`, `src/shared`, `src/server` e `web-dist`.
+2. Manter o jogo em projeto próprio, com código organizado em `src/client`, `src/shared`, `src/server` e build em `web-dist`.
 3. Tick fixo de 40 ms, menor divisor comum de 200 e 240 ms. A ordem é: entradas por jogador, circuitos, gravidade de baixo para cima, inimigos, dardos, perigos e vitória. Não há aleatoriedade na simulação.
 4. Folhagem espessa e madeira exigem fogo. Folhagem comum desaparece ao passar. Pedras só são empurradas para chão, gelo, água ou buraco vazios; submergir forma uma ponte ou preenche o buraco.
 5. Uma pedra em repouso não esmaga quem está imediatamente abaixo; somente uma pedra já em queda mata jogador ou inimigo. Inimigos bloqueiam pedras em repouso e são mortos por pedras já em queda.
@@ -18,5 +18,5 @@
 16. Sem vidas finitas: derrota individual mostra aviso e retry automático imediato no solo; no co-op, animação e espera de 3 s. A corrida tem tela de derrota para quem chega depois. Apenas o anfitrião pausa, reinicia ou avança a sala inteira.
 17. Em empate de corrida no mesmo tick, a ordem estável de entrada na sala desempata. Ranking local é medido em ticks de simulação, sem contabilizar pausa ou espera de reconexão.
 18. O nome fica em `GAME_NAME`; metadados HTML usam título provisório substituído na inicialização, e a marca visível deriva da constante. Músicas com motivos melódicos originais por mundo são iniciadas após interação para respeitar o WebAudio.
-19. Distribuição web separada em ZIP; nenhum binário, código ou asset do projeto C++ entra no pacote. A licença MIT do jogo novo não altera a licença dos arquivos preexistentes. Hospedagem documentada para LAN, Render e Docker, sem contratar serviços ou publicar em contas externas.
+19. Distribuição web em ZIP, sem dependências instaladas nem ferramentas portáteis. Hospedagem documentada para LAN, Render e Docker, sem contratar serviços ou publicar em contas externas.
 20. Testes de navegador usam o build e uma porta isolada (4173), evitando interferência de HMR. Medição de desempenho usa Chromium headless com 299 intervalos por perfil; emulação móvel verifica viewport e toque, sem afirmar medição em hardware físico de celular.

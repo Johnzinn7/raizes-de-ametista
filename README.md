@@ -1,6 +1,6 @@
 # Raízes de Ametista
 
-Jogo original de puzzle e aventura em Canvas 2D, TypeScript e Vite, com servidor autoritativo Node.js + ws. Interface em português brasileiro. O projeto C++ existente está preservado; sua documentação está em [README.WallX.md](README.WallX.md).
+Jogo original de puzzle e aventura em Canvas 2D, TypeScript e Vite, com servidor autoritativo Node.js + ws. Interface em português brasileiro.
 
 ## Arquitetura e plano
 
@@ -22,7 +22,7 @@ npm install
 npm run dev
 ```
 
-Abra o endereço impresso pelo Vite. `npm run dev` inicia também o servidor de salas em 3001 e encaminha `/ws` e `/api` pelo Vite. Para produção: `npm run build && npm start`, porta padrão 3001 (`PORT` configurável). O build web fica em `web-dist`, separado do `dist` da engine C++.
+Abra o endereço impresso pelo Vite. `npm run dev` inicia também o servidor de salas em 3001 e encaminha `/ws` e `/api` pelo Vite. Para produção: `npm run build && npm start`, porta padrão 3001 (`PORT` configurável). O build web fica em `web-dist`.
 
 ## Fidelidade ao Diamond Rush
 
@@ -86,8 +86,8 @@ Evidências de implementação: 57 testes de regras/rede, oito cenários de nave
 
 ## Empacotar e modificar
 
-`npm run package` cria `release/raizes-de-ametista.zip` e seu SHA-256. O pacote inclui fontes web, build, fases, documentação, testes e configurações de deploy. Ele exclui a engine nativa, assets preexistentes, dependências instaladas, sessões e ferramentas portáteis.
+`npm run package` cria `release/raizes-de-ametista.zip` e seu SHA-256. O pacote inclui fontes, build, fases, documentação, testes e configurações de deploy. Ele exclui dependências instaladas, sessões e ferramentas portáteis.
 
 Troque o nome em `GAME_NAME`, em `src/shared/config.ts`. Tempos, tamanho de tile, limites de uso e parâmetros de inimigos estão no mesmo arquivo. Toda a arte é gerada em um atlas Canvas em runtime, com contornos, paletas por mundo e animações; `src/client/art.ts` contém os desenhos. O áudio original é sintetizado em `src/client/audio.ts`, com quatro melodias e efeitos sem arquivos externos.
 
-A licença MIT na raiz aplica-se somente ao novo jogo web, seus desenhos, sons sintetizados e documentação. O projeto WallX Engine preexistente e bibliotecas de terceiros mantêm suas próprias licenças.
+A licença MIT na raiz aplica-se ao jogo, seus desenhos, sons sintetizados e documentação. Bibliotecas de terceiros mantêm suas próprias licenças.

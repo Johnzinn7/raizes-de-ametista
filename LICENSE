@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-Scope: this license applies to the newly created web game in src/client,
-src/shared, src/server, levels, scripts, tests/game, tests/browser and its
-web documentation and procedural artwork/audio. It does not relicense the
-pre-existing WallX Engine code, assets, samples or third-party dependencies.
+Scope: this license applies to the web game in src/client, src/shared,
+src/server, levels, scripts, tests/game, tests/browser and its web
+documentation and procedural artwork/audio. Third-party dependencies retain
+their respective licenses.

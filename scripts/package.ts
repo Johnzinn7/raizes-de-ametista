@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { deflateRawSync } from 'node:zlib';
 // Package only the web game. Native engine source, assets, tools and sessions stay outside.
-const entries = ['package.json', 'package-lock.json', 'index.html', 'tsconfig.json', 'vite.config.ts', 'playwright.config.ts', '.gitignore', '.dockerignore', 'Dockerfile', 'render.yaml', 'Jogar.ps1', 'README.md', 'README.WallX.md', 'DECISIONS.md', 'LICENSE', 'src/shared', 'src/client', 'src/server', 'levels', 'scripts', 'tests/game', 'tests/browser', 'docs', '.github', 'web-dist'];
+const entries = ['package.json', 'package-lock.json', 'index.html', 'tsconfig.json', 'vite.config.ts', 'playwright.config.ts', '.gitignore', '.dockerignore', 'Dockerfile', 'render.yaml', 'Jogar.ps1', 'README.md', 'DECISIONS.md', 'LICENSE', 'src/shared', 'src/client', 'src/server', 'levels', 'scripts', 'tests/game', 'tests/browser', 'docs', '.github', 'web-dist'];
 const files: string[] = [];
 async function walk(path: string) {
   if ((await stat(path)).isDirectory()) for (const child of (await readdir(path)).sort()) await walk(`${path}/${child}`);
