@@ -138,6 +138,16 @@ function showResult() {
   el.querySelector('#result-rank')!.addEventListener('click', () => rankingMenu(levels));
 }
 input.onReset = reset; input.onPause = pause;
+input.onChange = press => {
+  if (!playing || paused || state.status !== 'playing' || document.querySelector('.modal-backdrop')) return;
+  if (network.room) { network.intent(input.read(false), press); return; }
+  const player = state.players[0], intent = input.read(false);
+  if (!player.deadUntil && state.tick + 1 >= player.nextMove && (intent.direction || intent.action)) {
+    state = step(state, { solo: input.read() });
+    // Consume the upcoming tick early without adding extra ticks to the clock.
+    lastTick += CONFIG.tickMs; consumeEvents(); updateHUD();
+  }
+};
 $('#start').addEventListener('click', () => start(levels.find(l => !progress[l.id]?.completed) ?? levels[0]));
 $('#pause').addEventListener('click', pause); $('#reset').addEventListener('click', reset);
 $('#fullscreen').addEventListener('click', () => {
@@ -172,7 +182,7 @@ function frame(now: number) {
   while (now - lastTick >= CONFIG.tickMs && steps++ < 5) {
     lastTick += CONFIG.tickMs;
     if (playing && !paused && !hasModal) {
-      if (network.room) network.intent(input.read()); else { state = step(state, { solo: input.read() }); consumeEvents(); }
+      if (network.room) network.intent(input.read()); else { state = step(state, { solo: input.read(state.tick + 1 >= state.players[0].nextMove) }); consumeEvents(); }
     } else if (network.room) network.intent({});
   }
   if (steps >= 5) lastTick = now;

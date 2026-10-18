@@ -13,7 +13,7 @@ export class GridMotion {
       Object.assign(this.position, target); this.pending = [];
     } else if (distance) this.pending.push({ ...target });
     this.accepted = { ...target };
-    let remaining = Math.max(0, seconds) * CONFIG.tileSize * 1000 / CONFIG.moveMs;
+    let remaining = Math.max(0, seconds) * CONFIG.tileSize * 1000 / CONFIG.visualMoveMs;
     while (this.pending.length && remaining > 0) {
       const next = this.pending[0], dx = next.x - this.position.x, dy = next.y - this.position.y;
       const length = Math.hypot(dx, dy);

@@ -67,3 +67,13 @@ Build aprovado e 68 testes Vitest aprovados. Nove cenários Playwright passaram 
 Benchmark atualizado com três perfis: desktop na fase 01, desktop na fase 20 (46×38) e viewport móvel emulado na fase 01. Todos registraram 60,0 FPS, p95 e máximo de 16,8 ms, em 299 intervalos por perfil. Dados em `benchmark.json`. Celular físico continua sem medição.
 
 Progresso e ranking agora usam o namespace da campanha 2; os arquivos e dados antigos ficam preservados. O ZIP foi atualizado para incluir os novos mapas, fontes, build, documentação e atlas. Esta revisão foi preparada localmente; o envio ao GitHub e a publicação no Render dependem do próximo push.
+
+## Resposta dos controles — 18/10/2026
+
+O cliente deixou de esperar a leitura periódica para reagir ao primeiro comando: eventos de teclado e toque notificam a aplicação diretamente. No solo, um comando disponível consome antecipadamente o próximo tick, creditando esse tick no relógio para não duplicar simulação. Comandos breves de direção e poder são mantidos até o próximo passo disponível. No multiplayer, o envio também ocorre no evento, e o servidor preserva um toque mesmo quando a soltura chega antes da próxima simulação. O comando é consumido uma vez e limpo em pausa, desconexão, morte e reinício.
+
+O deslize visual foi reduzido de 200 para 120 ms e o amortecimento da câmera de 280 para 140 ms. A regra do jogo continua em uma casa a cada 200 ms. As alterações não usam previsão de posição, e o servidor continua validando os movimentos online. Não houve troca de hospedagem nem contratação de serviços. O modo solo já simula no navegador; no multiplayer, o ping até a hospedagem continua influenciando o tempo de confirmação.
+
+Build aprovado, 71 testes Vitest e 20/20 fases validadas. Dez cenários Playwright passaram em 1,1 minuto, incluindo vitória co-op/corrida, reconexão e toques de teclado de 5 ms nos dois modos. Um cenário com relógio controlado verificou que o primeiro movimento solo é aceito antes do próximo tick, que uma virada curta é preservada durante o cooldown e que o jogador para após a execução. Esse cenário também foi ampliado e executado isoladamente para confirmar coleta de fogo e uso único de um toque de poder durante o cooldown (aprovado em 1,3 s).
+
+`review-art` confirmou novamente animações, folhagem, cache e ausência de mutação da simulação. Benchmark local: 60,0 FPS no desktop nas fases 01 e 20 e no viewport móvel emulado; p95 de 16,8 ms no desktop e 16,7 ms no viewport móvel, máximo de 16,8 ms em todos. Medição de internet em produção e aparelho móvel físico não foi realizada. Pacote ZIP e commit local atualizados; a publicação depende do próximo push.

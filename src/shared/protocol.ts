@@ -6,7 +6,7 @@ export type ClientMessage =
   | { type: 'join'; code: string; name: string; color: string }
   | { type: 'reconnect'; code: string; token: string }
   | { type: 'ready'; ready: boolean }
-  | { type: 'input'; seq: number; intent: Intent }
+  | { type: 'input'; seq: number; intent: Intent; press?: boolean }
   | { type: 'emoji'; emoji: string }
   | { type: 'pause'; paused: boolean }
   | { type: 'restart' | 'next' | 'leave' };

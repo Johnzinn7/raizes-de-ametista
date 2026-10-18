@@ -38,7 +38,9 @@ Consulte `DECISIONS.md` para as escolhas de comportamento e `docs/PROGRESS.md` p
 
 São 20 templos originais em quatro mundos, redesenhados individualmente na campanha 2, de 24×24 a 46×38 casas. Há clareiras bifurcadas, ilhas rúnicas, fortalezas, galerias de dardos, labirintos e oficinas de contrapesos. As fases combinam os mecanismos gradualmente, com caminhos, saídas, cotas e tempos próprios. A seleção mostra nome, formato, dimensões e estrelas de cada fase. Veja o [atlas dos mapas](docs/campaign-preview.html).
 
-O passo mantém a regra de 200 ms, com deslize uniforme entre casas, menos balanço vertical e câmera amortecida. `CONFIG.cameraSmoothSeconds`, em `src/shared/config.ts`, ajusta a suavidade da câmera. Estrelas e tempos da campanha 2 são separados dos registros antigos, que ficam preservados.
+O passo mantém a regra de 200 ms, com deslize visual uniforme de 120 ms, menos balanço vertical e câmera amortecida em 140 ms. `CONFIG.visualMoveMs` e `CONFIG.cameraSmoothSeconds`, em `src/shared/config.ts`, ajustam a resposta visual. Teclas e toques são capturados no evento; o solo pode consumir antecipadamente o próximo tick, e comandos online são enviados imediatamente. Um toque rápido durante o cooldown fica guardado para o próximo passo, tanto no solo quanto no servidor. Estrelas e tempos da campanha 2 são separados dos registros antigos, que ficam preservados.
+
+No solo, toda a simulação ocorre no navegador: a distância da hospedagem não interfere nos movimentos depois do carregamento. No multiplayer, o servidor continua autoritativo e a rede acrescenta seu próprio tempo de ida e volta; estas otimizações reduzem esperas internas, sem prometer remover o ping da internet. Para comparar na rede local, consulte [hospedagem LAN](docs/HOSTING.md).
 
 | Ação | Tecla |
 | --- | --- |
@@ -85,7 +87,7 @@ npm run review-campaign
 
 `npm run check` reúne build, Vitest e validação. A suíte de navegador usa o **build existente** servido por `npm start` em porta isolada; execute build antes dela. O CI instala Chromium e executa todos esses checks, exceto o benchmark dependente da máquina.
 
-Evidências de implementação: 68 testes de regras, rede, conteúdo e movimento; nove cenários de navegador; 20/20 fases aprovadas, com reprodução de cada solução. As suítes concluem uma fase inteira no co-op e na corrida em dois navegadores, incluindo vitória, derrota e registro no ranking. Resultados estão em [PROGRESS.md](docs/PROGRESS.md). Os resultados de desempenho por perfil ficam nos [dados brutos](docs/benchmark.json). O perfil móvel usa emulação de viewport/toque no desktop; hardware físico de celular não foi medido.
+Evidências de implementação: 71 testes de regras, rede, conteúdo e movimento; dez cenários de navegador; 20/20 fases aprovadas, com reprodução de cada solução. As suítes concluem uma fase inteira no co-op e na corrida em dois navegadores, incluindo vitória, derrota e registro no ranking, e conferem resposta imediata e toques rápidos. Resultados estão em [PROGRESS.md](docs/PROGRESS.md). Os resultados de desempenho por perfil ficam nos [dados brutos](docs/benchmark.json). O perfil móvel usa emulação de viewport/toque no desktop; hardware físico de celular não foi medido.
 
 ## Empacotar e modificar
 

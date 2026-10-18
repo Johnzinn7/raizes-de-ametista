@@ -43,6 +43,6 @@ export class Network {
   }
   private persist() { try { if (this.room && this.token) sessionStorage.setItem('amethyst-session', JSON.stringify({ code: this.room.code, token: this.token })); else sessionStorage.removeItem('amethyst-session'); } catch { /* Private mode can disable storage. */ } }
   send(message: ClientMessage) { if (this.socket?.readyState === WebSocket.OPEN) this.socket.send(JSON.stringify(message)); }
-  intent(intent: Intent) { this.send({ type: 'input', seq: this.seq++, intent }); }
+  intent(intent: Intent, press = false) { this.send({ type: 'input', seq: this.seq++, intent, ...(press ? { press: true } : {}) }); }
   leave() { this.leaving = true; clearTimeout(this.reconnectTimer); this.send({ type: 'leave' }); this.socket?.close(); this.socket = undefined; this.room = undefined; this.states = []; this.token = ''; this.persist(); }
 }

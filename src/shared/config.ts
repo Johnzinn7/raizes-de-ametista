@@ -7,7 +7,7 @@ export const CONFIG = Object.freeze({
   spikeCycleMs: 2400, spikeWarningMs: 400, spikeActiveMs: 800,
   respawnMs: 3000, reconnectMs: 30000, batRange: 6, powerUses: 3,
   maxRoomCount: 100, maxMessageBytes: 2048, maxSolverStates: 150000,
-  cameraSmoothSeconds: .28,
+  visualMoveMs: 120, cameraSmoothSeconds: .14,
 });
 export const DIRECTIONS = { up: [0, -1], right: [1, 0], down: [0, 1], left: [-1, 0] } as const;
 export type Direction = keyof typeof DIRECTIONS;

@@ -51,7 +51,7 @@ for (const mode of ['coop', 'race'] as const) test(`two browser tabs synchronize
     const common = [...snapshotsA.keys()].filter(n => snapshotsB.has(n)); expect(common.length).toBeGreaterThan(4);
     for (const sequence of common) expect(snapshotsA.get(sequence)).toBe(snapshotsB.get(sequence));
     await b.reload(); await expect(b.locator('#mode-label')).toContainText(code); await expect(b.locator('.game-canvas')).toHaveAttribute('data-player', mode === 'coop' ? '3,4' : '3,3');
-    await b.keyboard.down('ArrowRight'); await expect(b.locator('.game-canvas')).not.toHaveAttribute('data-player', mode === 'coop' ? '3,4' : '3,3'); await b.keyboard.up('ArrowRight');
+    await b.keyboard.press('ArrowRight', { delay: 5 }); await expect(b.locator('.game-canvas')).not.toHaveAttribute('data-player', mode === 'coop' ? '3,4' : '3,3');
   } finally { await contextA.close(); await contextB.close(); }
 });
 
@@ -76,6 +76,26 @@ test('the new campaign starts fresh while preserving the previous campaign recor
   const old = await page.evaluate(() => JSON.parse(localStorage.getItem('amethyst-progress') || '{}'));
   expect(old['01'].bestMs).toBe(1000); expect(old['01'].completed).toBe(true);
   expect(await page.evaluate(key => localStorage.getItem(key), PROGRESS_STORAGE_KEY)).toBeNull();
+});
+
+test('solo reacts immediately and keeps quick turns and powers through cooldown', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-10-18T12:00:00Z') }); await page.clock.pauseAt(new Date('2026-10-18T12:00:01Z'));
+  await page.goto('/'); await page.clock.runFor(500); await page.getByRole('button', { name: 'Iniciar expedição' }).click();
+  await page.keyboard.down('ArrowRight');
+  // No clock advancement: the input handler must already have accepted this step.
+  await expect(page.locator('.game-canvas')).toHaveAttribute('data-player', '4,3');
+  await page.keyboard.up('ArrowRight'); await page.clock.runFor(80);
+  await page.keyboard.press('ArrowDown', { delay: 5 });
+  await expect(page.locator('.game-canvas')).toHaveAttribute('data-player', '4,3');
+  await page.clock.runFor(200); await expect(page.locator('.game-canvas')).toHaveAttribute('data-player', '4,4');
+  await page.clock.runFor(500); await expect(page.locator('.game-canvas')).toHaveAttribute('data-player', '4,4');
+  await page.getByRole('button', { name: 'Editor', exact: true }).click();
+  const powerLevel = { ...first, id: 'custom', name: 'Toque de poder', quota: 1, map: ['########', '#@fW.dE#', '#......#', '#......#', '########'] };
+  await page.locator('#editor-file').setInputFiles({ name: 'poder.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(powerLevel)) });
+  await expect(page.locator('#editor-name')).toHaveValue('Toque de poder'); await page.locator('#editor-test').click();
+  await page.keyboard.press('ArrowRight', { delay: 5 }); await expect(page.locator('#fire')).toHaveText('3');
+  await page.keyboard.press('f', { delay: 5 }); await page.clock.runFor(280); await expect(page.locator('#fire')).toHaveText('2');
+  await page.clock.runFor(500); await expect(page.locator('#fire')).toHaveText('2');
 });
 
 test('editor paints, validates, imports and exports an actual level', async ({ page }) => {

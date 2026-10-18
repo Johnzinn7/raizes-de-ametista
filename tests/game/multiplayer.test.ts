@@ -20,6 +20,29 @@ function setup(mode: 'coop' | 'race' = 'coop', record?: (e: RankingEntry) => voi
   return { manager, a, b, code, send };
 }
 describe('authoritative rooms', () => {
+  it('preserves a short press released before the next server tick and executes it once', () => {
+    const { manager, a, send } = setup(); const id = a.latest('session').id;
+    send(a, { type: 'input', seq: 0, press: true, intent: { direction: 'right' } });
+    send(a, { type: 'input', seq: 1, intent: {} }); manager.advance(40);
+    expect(a.latest('snapshot').states[0].players.find(p => p.id === id)!.x).toBe(2);
+    for (let time = 80; time <= 600; time += 40) manager.advance(time);
+    expect(a.latest('snapshot').states[0].players.find(p => p.id === id)!.x).toBe(2);
+  });
+  it('buffers the latest turn during cooldown without bypassing the movement limit', () => {
+    const { manager, a, send } = setup(); const id = a.latest('session').id;
+    send(a, { type: 'input', seq: 0, press: true, intent: { direction: 'right' } }); manager.advance(40);
+    send(a, { type: 'input', seq: 1, press: true, intent: { direction: 'down' } });
+    send(a, { type: 'input', seq: 2, intent: {} });
+    for (let time = 80; time <= 200; time += 40) manager.advance(time);
+    expect(a.latest('snapshot').states[0].players.find(p => p.id === id)).toMatchObject({ x: 2, y: 1 });
+    manager.advance(240); expect(a.latest('snapshot').states[0].players.find(p => p.id === id)).toMatchObject({ x: 2, y: 2 });
+  });
+  it('drops buffered controls when the host pauses', () => {
+    const { manager, a, send } = setup(); const id = a.latest('session').id;
+    send(a, { type: 'input', seq: 0, press: true, intent: { direction: 'right' } });
+    send(a, { type: 'pause', paused: true }); send(a, { type: 'pause', paused: false }); manager.advance(40);
+    expect(a.latest('snapshot').states[0].players.find(p => p.id === id)!.x).toBe(1);
+  });
   it('creates a four-letter room, requires readiness and broadcasts the same co-op state', () => {
     const { manager, a, b, code, send } = setup(); expect(code).toMatch(/^[A-Z]{4}$/);
     const id = a.latest('session').id; send(a, { type: 'input', seq: 0, intent: { direction: 'right', x: 99, diamonds: 999 } }); manager.advance(40);
