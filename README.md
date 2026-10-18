@@ -36,7 +36,9 @@ Consulte `DECISIONS.md` para as escolhas de comportamento e `docs/PROGRESS.md` p
 
 ## Jogar
 
-São 20 templos originais em quatro mundos, com mapas 25×25 e dificuldade crescente. Lia e Nilo exploram a selva, o gelo, as ruínas vulcânicas e a cripta. A seleção de fases mostra seu progresso e as estrelas salvas neste navegador.
+São 20 templos originais em quatro mundos, redesenhados individualmente na campanha 2, de 24×24 a 46×38 casas. Há clareiras bifurcadas, ilhas rúnicas, fortalezas, galerias de dardos, labirintos e oficinas de contrapesos. As fases combinam os mecanismos gradualmente, com caminhos, saídas, cotas e tempos próprios. A seleção mostra nome, formato, dimensões e estrelas de cada fase. Veja o [atlas dos mapas](docs/campaign-preview.html).
+
+O passo mantém a regra de 200 ms, com deslize uniforme entre casas, menos balanço vertical e câmera amortecida. `CONFIG.cameraSmoothSeconds`, em `src/shared/config.ts`, ajusta a suavidade da câmera. Estrelas e tempos da campanha 2 são separados dos registros antigos, que ficam preservados.
 
 | Ação | Tecla |
 | --- | --- |
@@ -61,13 +63,13 @@ Abra **Multiplayer**, escolha nome, cor, modo e fase, e crie uma sala. Compartil
 
 Somente o anfitrião pausa, reinicia ou avança a sala. A sala espera 30 s quando alguém desconecta, congelando a simulação. Recarregar a mesma aba retoma a sessão pelo token de reconexão. O servidor aceita intenções, nunca posições ou inventário enviados pelo cliente.
 
-Instruções de [LAN, produção, Render e Docker](docs/HOSTING.md). O ranking é persistido em `data/rankings.json`; na hospedagem, use disco persistente para conservá-lo entre reinícios. Salas são mantidas em memória por uma única instância Node.
+Instruções de [LAN, produção, Render e Docker](docs/HOSTING.md). O ranking atual é persistido em `data/rankings-campaign-2.json`; na hospedagem, use disco persistente para conservá-lo entre reinícios. Salas são mantidas em memória por uma única instância Node.
 
 ## Editor e conteúdo
 
 No menu **Editor**, pinte tiles, defina a cota e teste imediatamente. Importe ou exporte JSON e valide a fase no navegador. As regras e o BFS são compartilhados com o jogo. O painel avançado permite circuitos com alavancas, placas, portões, armadilhas e teleportes em pares.
 
-Veja a [legenda dos arquivos, progressão e limites do BFS](docs/LEVELS.md). O solver guarda o mundo real entre etapas de coleta e reproduz a sequência final para confirmar a vitória sem mortes e todas as gemas comuns. Falhas e buscas inconclusivas fazem o comando retornar erro, inclusive no CI.
+Veja a [legenda dos arquivos, progressão e limites do BFS](docs/LEVELS.md). O solver guarda o mundo real entre etapas de coleta e descoberta e reproduz a sequência final para confirmar a vitória sem mortes, todas as gemas comuns e o uso dos puzzles principais. Falhas e buscas inconclusivas retornam erro, inclusive no CI. O relatório está em `docs/campaign-validation.json`.
 
 ## Verificar
 
@@ -78,11 +80,12 @@ npm run validate-levels
 node node_modules/@playwright/test/cli.js install chromium
 npm run test:e2e
 npm run benchmark
+npm run review-campaign
 ```
 
 `npm run check` reúne build, Vitest e validação. A suíte de navegador usa o **build existente** servido por `npm start` em porta isolada; execute build antes dela. O CI instala Chromium e executa todos esses checks, exceto o benchmark dependente da máquina.
 
-Evidências de implementação: 57 testes de regras/rede, oito cenários de navegador e 20/20 fases aprovadas, com reprodução de cada solução. As suítes concluem uma fase inteira no co-op e na corrida em dois navegadores, incluindo vitória, derrota e registro no ranking. Resultados estão em [PROGRESS.md](docs/PROGRESS.md). O benchmark local registrou 60,0 FPS, p95 de 16,7 ms, em 299 intervalos por perfil desktop e viewport móvel. Veja [dados brutos](docs/benchmark.json). O perfil móvel usa emulação de viewport/toque no desktop; hardware físico de celular não foi medido.
+Evidências de implementação: 68 testes de regras, rede, conteúdo e movimento; nove cenários de navegador; 20/20 fases aprovadas, com reprodução de cada solução. As suítes concluem uma fase inteira no co-op e na corrida em dois navegadores, incluindo vitória, derrota e registro no ranking. Resultados estão em [PROGRESS.md](docs/PROGRESS.md). Os resultados de desempenho por perfil ficam nos [dados brutos](docs/benchmark.json). O perfil móvel usa emulação de viewport/toque no desktop; hardware físico de celular não foi medido.
 
 ## Empacotar e modificar
 

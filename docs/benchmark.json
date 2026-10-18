@@ -1,18 +1,28 @@
 {
   "environment": "Chromium headless on the development Windows desktop; mobile is viewport emulation, not physical device hardware.",
-  "date": "2026-10-14",
+  "date": "2026-10-18",
   "samples": [
     {
       "name": "desktop",
+      "levelId": "01",
       "fps": 60,
-      "p95FrameMs": 16.7,
+      "p95FrameMs": 16.8,
+      "maxFrameMs": 16.8,
+      "frames": 299
+    },
+    {
+      "name": "desktop-large",
+      "levelId": "20",
+      "fps": 60,
+      "p95FrameMs": 16.8,
       "maxFrameMs": 16.8,
       "frames": 299
     },
     {
       "name": "mobile-viewport",
+      "levelId": "01",
       "fps": 60,
-      "p95FrameMs": 16.7,
+      "p95FrameMs": 16.8,
       "maxFrameMs": 16.8,
       "frames": 299
     }

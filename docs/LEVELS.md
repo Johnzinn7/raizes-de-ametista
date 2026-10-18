@@ -1,6 +1,6 @@
 # Fases e editor
 
-Os arquivos `levels/01.json` a `20.json` contêm toda a campanha. Cada mapa tem 25×25 casas, uma cota, um tempo-alvo, checkpoint, gemas comuns, gemas bônus e um segredo. `scripts/generate-levels.ts` documenta a construção procedural determinística desses layouts originais; o jogo lê os JSON, não executa o gerador.
+Os arquivos `levels/01.json` a `20.json` contêm a campanha 2, com **20 desenhos independentes**, de 24×24 a 46×38. Cada mapa tem cota, tempo-alvo, checkpoint, gemas comuns, bônus e um segredo. `scripts/campaign-plans.ts` contém as plantas desenhadas individualmente; `scripts/generate-levels.ts` as exporta de forma determinística. O jogo lê os JSON e não executa o gerador. Não há uma sequência de salas reutilizada ou rotacionada entre fases.
 
 | Mundo | Fases | Novas ideias |
 | --- | --- | --- |
@@ -9,7 +9,34 @@ Os arquivos `levels/01.json` a `20.json` contêm toda a campanha. Cada mapa tem 
 | Ruínas de Fogo | 11–15 | Fogo; barricadas e chave rubra; cobras; dardos; placas com pedras |
 | Cripta Sombria | 16–20 | Morcegos; múltiplas cores; fogo e gelo; circuitos com dois selos; combinação final |
 
-As câmaras oferecem rotas alternativas e tesouros fora do trajeto principal. Em doze fases, a variante co-op troca a entrada do cofre secreto por um portão: uma pessoa segura a placa e a outra entra, coleta e retorna. A rota de saída permanece solucionável solo.
+As fases alternam exploração, busca com retorno, administração de poderes, travessias, espera por perigos e puzzles com pedras. Comprimento não é sinônimo de dificuldade: uma oficina de contrapesos pode ser menor e exigir mais planejamento que uma galeria extensa. As cotas variam de 4 a 12 gemas; depois da introdução, todas as gemas comuns são necessárias para abrir a saída. Tempos-alvo variam de 35 a 140 segundos.
+
+| Fase | Dimensões | Estrutura e desafio |
+| --- | --- | --- |
+| 01 | 24×24 | Clareira bifurcada; circuito de exploração entre jardins |
+| 02 | 28×24 | Pedreira em ferradura; empurrar e contornar a pedra |
+| 03 | 32×24 | Duas margens; construir duas pontes com pedras |
+| 04 | 26×30 | Quatro alas; buscar a chave e voltar ao santuário |
+| 05 | 34×26 | Aqueduto interrompido; duas alavancas em sequência |
+| 06 | 30×28 | Canais em três direções; administrar os três usos de gelo |
+| 07 | 24×36 | Escadaria em zigue-zague; espinhos cíclicos e abrigos |
+| 08 | 36×26 | Ilhas desconectadas; escolher e revisitar runas de teleporte |
+| 09 | 28×34 | Fortaleza ascendente; gelo e busca lateral da chave azul |
+| 10 | 38×28 | Terraços; liberar folhagem de apoio e deixar pedras formarem pontes |
+| 11 | 26×32 | Árvore de cinzas; três alas, recarga e quatro barreiras de fogo |
+| 12 | 34×30 | Labirinto de vigas; atalho queimável e chave rubra |
+| 13 | 40×26 | Três jardins; cobras, pilares de abrigo e portal no mirante |
+| 14 | 30×38 | Galerias de tiro; refúgios entre travessias expostas |
+| 15 | 36×32 | Oficina; duas pedras sobre placas e portão que exige ambas |
+| 16 | 28×40 | Catacumbas; câmaras para escapar dos morcegos |
+| 17 | 42×30 | Rosácea; três chaves em alas que precisam ser revisitadas |
+| 18 | 32×40 | Delta; recarga de fogo, três canais e uso combinado de poderes |
+| 19 | 44×32 | Observatório; alas em circuito, atalho rúnico e dois selos |
+| 20 | 46×38 | Santuário assimétrico; ponte, duas cores, poderes, armadilhas e contrapeso final |
+
+Abra o [atlas interativo](campaign-preview.html) para comparar as plantas, ou rode `npm run review-campaign` para regenerá-lo. A imagem está em `screenshots/campaign-overview.png`.
+
+Em doze fases, o cofre secreto tem uma variante co-op isolada: uma pessoa segura a placa enquanto a outra atravessa o portão, coleta e retorna. Essas passagens não podem ser contornadas por outra entrada. O percurso obrigatório de cada mapa permanece solucionável solo.
 
 ## Usar o editor
 
@@ -54,6 +81,12 @@ Alavancas e placas abrem todos os portões quando não há ligações manuais. T
 
 `npm run validate-levels` executa BFS sobre estados produzidos por `step`, incluindo direção, cooldown, inventário, portas, rochas, gravidade, inimigos, dardos, circuitos e fases dos timers. Cada aresta aplica uma intenção e cinco ticks de 40 ms. Esperar e usar fogo/gelo são ações possíveis. Estados com mortes são rejeitados.
 
-A busca usa etapas: encontra a próxima gema comum, mantém o estado real alcançado e busca a seguinte. Só então busca a saída. Não busca a rota globalmente mínima e pode não confirmar mapas arbitrários que exigem uma ordem de coleta diferente; isso é reportado como falha, nunca como sucesso. O limite é 150.000 estados por fase. Um sucesso contém uma sequência reproduzível que coleta **todas** as gemas comuns e vence. Bônus são opcionais para a validação.
+A busca usa etapas: encontra uma gema comum, chave, baú de poder ou alavanca ainda não ativada e mantém o estado real alcançado. A saída só pode encerrar a busca depois de todas as gemas comuns. Não busca a rota globalmente mínima e pode não confirmar mapas arbitrários que exigem uma ordem diferente; isso é reportado como falha, nunca como sucesso. O limite é 150.000 estados por fase. Um sucesso contém uma sequência reproduzível que coleta **todas** as gemas comuns e vence sem mortes. Bônus são opcionais para a validação.
 
-O CI executa o validador e falha se uma fase não tiver solução confirmada. O editor suporta mapas entre 5 e 64 casas em cada dimensão; a campanha usa 25×25. JSONs importados não entram automaticamente na campanha ou nas salas: adicione-os a `levels` e rode os checks para distribuí-los.
+O deduplicador considera apenas os timers realmente presentes no estado e sua combinação de períodos. Em buscas sem mortes, checkpoints não diferenciam continuações; a orientação só diferencia estados quando há poder disponível, e cooldowns prontos para o próximo tick são equivalentes. As transições continuam executando a mesma simulação completa. Há testes dessas equivalências e da reprodução de chaves, poderes e circuitos.
+
+O validador também reprova soluções que evitam o desafio principal: confere pontes formadas, usos de fogo/gelo, portas abertas, alavancas, travessias de espinhos, teleportes e pedras mantidas nas placas conforme a fase. O relatório completo fica em `campaign-validation.json`. Para conferir apenas uma fase, use `npm run validate-levels -- 14`.
+
+O CI executa o validador e falha se uma fase não tiver solução confirmada. O editor suporta mapas entre 5 e 64 casas em cada dimensão. JSONs importados não entram automaticamente na campanha ou nas salas: adicione-os a `levels` e rode os checks para distribuí-los.
+
+A campanha 2 mantém os IDs de 01 a 20 para seleção e salas, mas guarda estrelas e tempos em um espaço próprio. `amethyst-progress` e `data/rankings.json` da campanha anterior continuam preservados; os novos registros usam `amethyst-progress-campaign-2` e `data/rankings-campaign-2.json`.

@@ -7,6 +7,7 @@ export interface Level {
   hint: string; map: string[]; circuits: Circuit[]; teleports: [Point, Point][];
   solution?: string; coopSolution?: string; coopOnly?: boolean;
   mechanic?: string;
+  layout?: string; difficulty?: number;
   coopVariant?: { tiles: (Point & { tile: string })[]; circuits: Circuit[] };
 }
 export interface Intent { direction?: Direction; action?: 'fire' | 'ice'; }

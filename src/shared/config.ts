@@ -1,10 +1,13 @@
 export const GAME_NAME = 'Raízes de Ametista';
+export const CAMPAIGN_VERSION = 2;
+export const PROGRESS_STORAGE_KEY = `amethyst-progress-campaign-${CAMPAIGN_VERSION}`;
 export const CONFIG = Object.freeze({
   tileSize: 32, tickMs: 40, moveMs: 200, gravityMs: 240,
   enemyMs: 400, dartMs: 1600, dartStepMs: 80,
   spikeCycleMs: 2400, spikeWarningMs: 400, spikeActiveMs: 800,
   respawnMs: 3000, reconnectMs: 30000, batRange: 6, powerUses: 3,
   maxRoomCount: 100, maxMessageBytes: 2048, maxSolverStates: 150000,
+  cameraSmoothSeconds: .28,
 });
 export const DIRECTIONS = { up: [0, -1], right: [1, 0], down: [0, 1], left: [-1, 0] } as const;
 export type Direction = keyof typeof DIRECTIONS;

@@ -1,7 +1,9 @@
 import { test, expect, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { solveLevel } from '../../src/shared/solver';
+import { PROGRESS_STORAGE_KEY } from '../../src/shared/config';
 const first = JSON.parse(readFileSync('levels/01.json', 'utf8'));
+const last = JSON.parse(readFileSync('levels/20.json', 'utf8'));
 const solution = solveLevel(first);
 
 test('solo campaign, pause, victory and saved progress work through real keyboard input', async ({ page }) => {
@@ -17,7 +19,7 @@ test('solo campaign, pause, victory and saved progress work through real keyboar
   }
   await page.clock.runFor(100);
   await expect(page.getByRole('heading', { name: 'O templo se abriu!' })).toBeVisible();
-  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('amethyst-progress') || '{}'));
+  const stored = await page.evaluate(key => JSON.parse(localStorage.getItem(key) || '{}'), PROGRESS_STORAGE_KEY);
   expect(stored['01'].completed).toBe(true); expect(stored['01'].stars).toEqual([false, true, true]);
   await page.getByRole('button', { name: 'Próxima fase' }).click(); await page.clock.runFor(200);
   await expect(page.locator('#level-name')).toHaveText('A memória das pedras');
@@ -60,7 +62,20 @@ test('options, remapping, theme and all twenty level cards are usable', async ({
   await page.getByRole('button', { name: 'Fechar', exact: true }).click(); await page.reload();
   await expect(page.locator('html')).toHaveClass('light');
   await page.getByRole('button', { name: 'Fases', exact: true }).click(); await expect(page.locator('.level-button')).toHaveCount(20);
+  await expect(page.locator('[data-level="02"]')).toContainText('28 × 24');
+  await expect(page.locator('[data-level="20"]')).toContainText('Santuário dos quatro caminhos');
   await page.locator('[data-level="20"]').click(); await expect(page.locator('#world-tag')).toHaveText('Cripta Sombria');
+});
+
+test('the new campaign starts fresh while preserving the previous campaign records', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('amethyst-progress', JSON.stringify({ '01': { stars: [true, true, true], completed: true, bestMs: 1000 } }));
+  });
+  await page.goto('/'); await page.getByRole('button', { name: 'Fases', exact: true }).click();
+  await expect(page.locator('[data-level="01"] small')).toHaveText('☆☆☆');
+  const old = await page.evaluate(() => JSON.parse(localStorage.getItem('amethyst-progress') || '{}'));
+  expect(old['01'].bestMs).toBe(1000); expect(old['01'].completed).toBe(true);
+  expect(await page.evaluate(key => localStorage.getItem(key), PROGRESS_STORAGE_KEY)).toBeNull();
 });
 
 test('editor paints, validates, imports and exports an actual level', async ({ page }) => {
@@ -71,9 +86,12 @@ test('editor paints, validates, imports and exports an actual level', async ({ p
   await page.mouse.click(bounds!.x + bounds!.width * 6.5 / 25, bounds!.y + bounds!.height * 2.5 / 25);
   await page.locator('#editor-quota').fill('1'); await page.locator('#editor-validate').click(); await expect(page.locator('#editor-result')).toContainText('Solução encontrada', { timeout: 30000 });
   const downloadPromise = page.waitForEvent('download'); await page.locator('#editor-export').click(); const download = await downloadPromise; expect(download.suggestedFilename()).toBe('meu-templo.json');
-  await page.locator('#editor-file').setInputFiles({ name: 'fase.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(first)) });
-  await expect(page.locator('#editor-name')).toHaveValue(first.name); await page.locator('#editor-test').click();
-  await expect(page.locator('#level-name')).toHaveText(first.name); await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.locator('#editor-file').setInputFiles({ name: 'fase.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(last)) });
+  await expect(page.locator('#editor-name')).toHaveValue(last.name);
+  const rectangular = await page.locator('.editor-canvas').boundingBox();
+  expect(rectangular!.width / rectangular!.height).toBeCloseTo(last.map[0].length / last.map.length, 2);
+  await page.locator('#editor-test').click();
+  await expect(page.locator('#level-name')).toHaveText(last.name); await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 
 test('mobile layout fits and touch taps move the explorer', async ({ browser }) => {

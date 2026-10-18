@@ -16,6 +16,8 @@ npm start
 
 Abra `http://localhost:3001`. HTTP, assets, `/api/rankings` e `/ws` usam a mesma porta. Variáveis: `PORT` (3001), `DATA_DIR` (pasta `data` no projeto). Use uma única instância: salas ficam em memória, e o ranking usa arquivo JSON com escrita atômica. Reiniciar o processo encerra salas; reconexão de 30 segundos cobre falha do cliente, não reinício do servidor.
 
+O ranking da campanha redesenhada usa `rankings-campaign-2.json` dentro de `DATA_DIR`. O antigo `rankings.json` fica preservado. As duas campanhas têm recordes separados para que os tempos dos mapas antigos não sejam comparados com os novos.
+
 `tsx` faz parte das dependências de execução. Depois do build, é possível usar `npm prune --omit=dev` e continuar com `npm start`. Preserve `src/server`, `src/shared`, `levels`, `web-dist`, `package.json` e `node_modules`.
 
 ## Render

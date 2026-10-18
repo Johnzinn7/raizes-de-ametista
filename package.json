@@ -16,6 +16,7 @@
     "check": "npm run build && npm test && npm run validate-levels",
     "benchmark": "node --import tsx scripts/benchmark.ts",
     "review-art": "node --import tsx scripts/review-art.ts",
+    "review-campaign": "node --import tsx scripts/review-campaign.ts",
     "package": "node --import tsx scripts/package.ts"
   },
   "dependencies": {

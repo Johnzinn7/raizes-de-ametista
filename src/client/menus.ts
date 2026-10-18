@@ -5,9 +5,13 @@ import { Input, DEFAULT_BINDINGS } from './input';
 import { settings, progress, saveSettings } from './storage';
 import { escapeHTML, icon, modal, toast } from './ui';
 export const formatTime = (ms: number) => `${Math.floor(ms / 60000).toString().padStart(2, '0')}:${Math.floor(ms % 60000 / 1000).toString().padStart(2, '0')}`;
+function levelCard(level: Level) {
+  const earned = [0, 1, 2].map(i => progress[level.id]?.stars?.[i] ? '★' : '☆').join('');
+  return `<button class="level-button" data-level="${level.id}" title="${escapeHTML(level.name)}"><span class="level-card-head"><b>${level.id}</b><small>${earned}</small></span><strong>${escapeHTML(level.name)}</strong><span class="level-layout">${escapeHTML(level.layout ?? WORLDS[level.world].name)}</span><span class="level-size">${level.map[0].length} × ${level.map.length} · ${level.quota} gemas</span></button>`;
+}
 export function levelMenu(levels: Level[], start: (level: Level) => void) {
   const completed = levels.filter(l => progress[l.id]?.completed).length;
-  const el = modal('Um mundo de caminhos', `<p>${completed} de 20 fases concluídas. Cada templo guarda três estrelas e um segredo.</p>${WORLDS.map((w, i) => `<div class="world-heading"><h3>${w.name}</h3><span>0${i + 1} / ${escapeHTML(w.subtitle)}</span></div><div class="level-grid">${levels.filter(l => l.world === i).map(l => `<button class="level-button" data-level="${l.id}" title="${escapeHTML(l.name)}">${String(l.index).padStart(2, '0')}<small>${[0, 1, 2].map(j => progress[l.id]?.stars?.[j] ? '★' : '☆').join('')}</small></button>`).join('')}</div>`).join('')}<div class="modal-actions"><button class="secondary" id="show-ranking">${icon('trophy')} Ranking de corrida</button></div>`);
+  const el = modal('Um mundo de caminhos', `<p>${completed} de 20 fases concluídas. Caminhos próprios, três estrelas e um segredo em cada templo.</p>${WORLDS.map((w, i) => `<div class="world-heading"><h3>${w.name}</h3><span>0${i + 1} / ${escapeHTML(w.subtitle)}</span></div><div class="level-grid">${levels.filter(l => l.world === i).map(levelCard).join('')}</div>`).join('')}<div class="modal-actions"><button class="secondary" id="show-ranking">${icon('trophy')} Ranking de corrida</button></div>`);
   el.querySelectorAll<HTMLButtonElement>('[data-level]').forEach(b => b.onclick = () => start(levels.find(l => l.id === b.dataset.level)!));
   el.querySelector('#show-ranking')!.addEventListener('click', () => rankingMenu(levels));
 }

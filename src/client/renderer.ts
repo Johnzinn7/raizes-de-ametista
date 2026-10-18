@@ -3,6 +3,7 @@ import { at, pointKey, spikePhase } from '../shared/engine';
 import type { GameState, GameEvent } from '../shared/types';
 import { Atlas, hash, rock } from './art';
 import type { Facing } from './explorer';
+import { GridMotion, dampCamera } from './motion';
 interface Particle { x: number; y: number; vx: number; vy: number; life: number; color: string; leaf?: boolean; angle?: number; spin?: number }
 interface Clearing { x: number; y: number; age: number; variant: number }
 interface Pose { facing: Facing; animation: string; elapsed: number; frame: number }
@@ -10,7 +11,10 @@ export class Renderer {
   private c: CanvasRenderingContext2D;
   private atlas = new Atlas();
   private positions = new Map<string, { x: number; y: number }>();
+  private motions = new Map<string, GridMotion>();
   private camera = { x: 0, y: 0 };
+  private cameraVelocity = { x: 0, y: 0 };
+  private cameraReady = false;
   private particles: Particle[] = [];
   private clearings: Clearing[] = [];
   private poses = new Map<string, Pose>();
@@ -19,7 +23,7 @@ export class Renderer {
   effects = true; world = 0; focusId = 'solo'; colors = ['#6d9e87', '#ba7e82'];
   fps = 60;
   constructor(readonly canvas: HTMLCanvasElement) { this.c = canvas.getContext('2d', { alpha: false })!; }
-  reset() { this.positions.clear(); this.poses.clear(); this.particles = []; this.clearings = []; this.fade = 1; this.eventTick = -1; }
+  reset() { this.positions.clear(); this.motions.clear(); this.poses.clear(); this.particles = []; this.clearings = []; this.fade = 1; this.eventTick = -1; this.cameraReady = false; this.cameraVelocity = { x: 0, y: 0 }; }
   private pose(id: string, direction: string, animation: string, dt: number) {
     const pose = this.poses.get(id) ?? { facing: 'right' as Facing, animation, elapsed: 0, frame: 0 };
     if (direction === 'left' || direction === 'right') pose.facing = direction;
@@ -87,16 +91,18 @@ export class Renderer {
     const c = this.c, tile = CONFIG.tileSize, frame = Math.floor(time / 180) % 4;
     c.fillStyle = '#101c18'; c.fillRect(0, 0, this.width, this.height);
     for (const p of state.players) {
-      const key = `p${p.id}`, old = this.positions.get(key) ?? { x: p.x * tile, y: p.y * tile };
-      const jump = Math.abs(old.x - p.x * tile) + Math.abs(old.y - p.y * tile) > tile * 3;
-      old.x += (p.x * tile - old.x) * (jump ? 1 : Math.min(1, dt * 15)); old.y += (p.y * tile - old.y) * (jump ? 1 : Math.min(1, dt * 15)); this.positions.set(key, old);
+      const key = `p${p.id}`, target = { x: p.x * tile, y: p.y * tile };
+      const motion = this.motions.get(key) ?? new GridMotion(target);
+      this.motions.set(key, motion); this.positions.set(key, motion.update(target, dt));
     }
     const player = state.players.find(p => p.id === this.focusId) ?? state.players[0];
     const focus = this.positions.get(`p${player.id}`)!;
     const viewW = this.width / this.scale, viewH = this.height / this.scale;
     const cx = Math.max(0, Math.min(state.width * tile - viewW, focus.x + 16 - viewW / 2));
     const cy = Math.max(0, Math.min(state.height * tile - viewH, focus.y + 16 - viewH / 2));
-    this.camera.x += (cx - this.camera.x) * Math.min(1, dt * 7); this.camera.y += (cy - this.camera.y) * Math.min(1, dt * 7);
+    if (!this.cameraReady) { this.camera = { x: cx, y: cy }; this.cameraReady = true; }
+    const sx = dampCamera(this.camera.x, this.cameraVelocity.x, cx, dt), sy = dampCamera(this.camera.y, this.cameraVelocity.y, cy, dt);
+    this.camera = { x: sx.position, y: sy.position }; this.cameraVelocity = { x: sx.velocity, y: sy.velocity };
     c.save(); c.scale(this.scale, this.scale);
     const shakeX = this.effects ? Math.sin(time * .12) * this.shake : 0; this.shake = Math.max(0, this.shake - dt * 20);
     c.translate(Math.round(-this.camera.x + shakeX), Math.round(-this.camera.y));

@@ -3,7 +3,7 @@ import { readFile, readdir, mkdir, rename, writeFile } from 'node:fs/promises';
 import { resolve, sep, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
-import { CONFIG } from '../shared/config';
+import { CAMPAIGN_VERSION, CONFIG } from '../shared/config';
 import { RoomManager } from './rooms';
 import type { Level } from '../shared/types';
 import type { RankingEntry } from '../shared/protocol';
@@ -11,13 +11,15 @@ const root = fileURLToPath(new URL('../..', import.meta.url));
 export async function startServer(port = Number(process.env.PORT || 3001), host = '0.0.0.0') {
   const levels: Level[] = await Promise.all((await readdir(resolve(root, 'levels'))).filter(f => f.endsWith('.json')).sort().map(async f => JSON.parse(await readFile(resolve(root, 'levels', f), 'utf8'))));
   let rankings: RankingEntry[] = []; const dataDir = process.env.DATA_DIR || resolve(root, 'data');
-  try { rankings = JSON.parse(await readFile(resolve(dataDir, 'rankings.json'), 'utf8')); } catch { /* First start has no rankings. */ }
+  const rankingPath = resolve(dataDir, `rankings-campaign-${CAMPAIGN_VERSION}.json`);
+  const rankingTempPath = rankingPath + '.tmp';
+  try { rankings = JSON.parse(await readFile(rankingPath, 'utf8')); } catch { /* First start has no rankings. */ }
   let save = Promise.resolve();
   const rooms = new RoomManager(levels, entry => {
     rankings.push(entry); rankings.sort((a, b) => a.milliseconds - b.milliseconds);
     rankings = rankings.filter((e, i, a) => a.findIndex(o => o.levelId === e.levelId && o.name === e.name) === i).slice(0, 400);
     const serialized = JSON.stringify(rankings);
-    save = save.then(async () => { await mkdir(dataDir, { recursive: true }); await writeFile(resolve(dataDir, 'rankings.tmp'), serialized); await rename(resolve(dataDir, 'rankings.tmp'), resolve(dataDir, 'rankings.json')); }).catch(e => console.error('Falha ao salvar ranking:', e.message));
+    save = save.then(async () => { await mkdir(dataDir, { recursive: true }); await writeFile(rankingTempPath, serialized); await rename(rankingTempPath, rankingPath); }).catch(e => console.error('Falha ao salvar ranking:', e.message));
   });
   const server = createServer(async (req, res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');

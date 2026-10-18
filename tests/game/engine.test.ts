@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createGame, step, at, stars } from '../../src/shared/engine';
-import { advanceAction, solveLevel } from '../../src/shared/solver';
+import { advanceAction, solveLevel, stateKey } from '../../src/shared/solver';
 import type { Level, GameState, Intent } from '../../src/shared/types';
 
 export const level = (map: string[], extra: Partial<Level> = {}): Level => ({ id: 'test', name: 'Teste', world: 0, index: 1, quota: 0, targetSeconds: 120, hint: '', map, circuits: [], teleports: [], ...extra });
@@ -41,5 +41,29 @@ describe('deterministic grid core', () => {
   it('scores stars independently', () => {
     let s = createGame(level(['#######','#@d..E#','#r....#','#.....#','#######'], { quota: 1 }));
     s = advanceAction(s, { direction: 'right' }); expect(stars(s)).toEqual([false, true, true]);
+  });
+  it('solver keeps real power and key discoveries between collection stages', () => {
+    const map = level(['############', '#@fW..i~d.E#', '############', '#..........#', '############'], { quota: 1 });
+    const solution = solveLevel(map); expect(solution.solved).toBe(true);
+    expect(solution.actions.some(action => action.action === 'fire')).toBe(true);
+    expect(solution.actions.some(action => action.action === 'ice')).toBe(true);
+    const replay = solution.actions.reduce((s, action) => advanceAction(s, action), createGame(map));
+    expect(replay.status).toBe('won'); expect(replay.players[0].deaths).toBe(0);
+  });
+  it('solver merges only states with equivalent death-free continuations', () => {
+    const a = createGame(level(['#######', '#@...E#', '#.....#', '#.....#', '#######']));
+    const b = structuredClone(a); b.players[0].direction = 'left'; b.players[0].checkpoint = { x: 4, y: 2 }; b.players[0].nextMove = 1;
+    expect(stateKey(a)).toBe(stateKey(b));
+    a.fire = b.fire = 1; expect(stateKey(a)).not.toBe(stateKey(b));
+    a.fire = b.fire = 0; a.tiles[10] = b.tiles[10] = '!'; b.tick = 1; expect(stateKey(a)).not.toBe(stateKey(b));
+    b.tick = 60; expect(stateKey(a)).toBe(stateKey(b));
+    a.tiles[10] = b.tiles[10] = '.'; a.enemies.push({ x: 3, y: 2, kind: 'snake', direction: 'right', alive: true }); b.enemies = structuredClone(a.enemies);
+    b.tick = 10; expect(stateKey(a)).toBe(stateKey(b)); b.tick = 5; expect(stateKey(a)).not.toBe(stateKey(b));
+  });
+  it('solver can activate two seals around a loop without repeatedly committing the same switch', () => {
+    const map = level(['###########', '#@l...l.GE#', '#.d....####', '###########', '###########'], { quota: 1, circuits: [{ gates: [{ x: 8, y: 1 }], triggers: [{ x: 2, y: 1 }, { x: 6, y: 1 }], requireAll: true }] });
+    const solution = solveLevel(map, 10000); expect(solution.solved).toBe(true);
+    const replay = solution.actions.reduce((s, action) => advanceAction(s, action), createGame(map));
+    expect(replay.status).toBe('won'); expect(Object.values(replay.levers)).toEqual([true, true]);
   });
 });

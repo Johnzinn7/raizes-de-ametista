@@ -35,7 +35,7 @@ export function drawExplorer(c: Context, direction: string, frame: number, color
   const phase = frame % 8 * Math.PI / 4 * (climbing && direction === 'down' ? -1 : 1);
   const stride = Math.round(Math.sin(phase) * (animation === 'push' ? 3 : 6));
   const breath = animation === 'idle' ? [0, 0, 1, 1, 2, 2, 2, 1, 1, 0, 0, 0][frame % 12] : 0;
-  const lift = moving ? Math.round(Math.abs(Math.sin(phase)) * 2) : 0;
+  const lift = moving ? Math.round(Math.abs(Math.sin(phase))) : 0;
   const upperY = -breath - lift;
   const shirtDark = tint(color, -42), shirtLight = tint(color, 35);
   const skin = '#e0a678', skinLight = '#ffd4a0', skinShade = '#9c6047';
