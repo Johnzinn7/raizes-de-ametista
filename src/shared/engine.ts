@@ -17,9 +17,10 @@ export function validateLevel(level: Level): string[] {
   if (!level || !Array.isArray(level.map) || !level.map.length || typeof level.map[0] !== 'string') return ['Mapa ausente.'];
   const w = level.map[0].length;
   if (w < 5 || w > 64 || level.map.length < 5 || level.map.length > 64) errors.push('Dimensões entre 5 e 64.');
-  if (level.map.some(r => typeof r !== 'string' || r.length !== w || /[^#.,drOh~^!abcABClpGtf i$XWPEs*>v<unm@2=]/.test(r))) errors.push('Tiles inválidos ou linhas irregulares.');
+  if (level.map.some(r => typeof r !== 'string' || r.length !== w || /[^#.,drOh~^!abcABClpGtf i$XWPEs*>v<unm@234=]/.test(r))) errors.push('Tiles inválidos ou linhas irregulares.');
   const all = level.map.join('');
   if (all.split('@').length !== 2 || !all.includes('E')) errors.push('Defina um início e uma saída.');
+  if ([...'234'].some(marker => all.split(marker).length > 2)) errors.push('Cada início de jogador deve ser único.');
   if (!Number.isInteger(level.quota) || level.quota < 0 || level.quota > (all.match(/d/g) ?? []).length) errors.push('Cota inválida.');
   if (!Number.isFinite(level.targetSeconds) || level.targetSeconds <= 0) errors.push('Tempo-alvo inválido.');
   if (!Number.isInteger(level.world) || level.world < 0 || level.world > 3) errors.push('Mundo inválido.');
@@ -35,19 +36,37 @@ export function validateLevel(level: Level): string[] {
 }
 export function createGame(level: Level, ids = ['solo'], mode: GameState['mode'] = 'solo'): GameState {
   const errors = validateLevel(level); if (errors.length) throw new Error(errors.join(' '));
+  if (!ids.length || ids.length > CONFIG.maxPlayers || new Set(ids).size !== ids.length) throw new Error('Defina de 1 a 4 jogadores com identificadores únicos.');
   const width = level.map[0].length;
   const tiles = level.map.join('').split('');
-  const start = tiles.indexOf('@'), second = tiles.indexOf('2');
+  const markers = [...'@234'].map(marker => tiles.indexOf(marker));
   const pos = (i: number) => ({ x: i % width, y: Math.floor(i / width) });
   const rocks: GameState['rocks'] = [], enemies: GameState['enemies'] = [];
   tiles.forEach((tile, i) => {
     if (tile === 'O') rocks.push({ ...pos(i), falling: false, id: i });
     if (tile === 'n' || tile === 'm') enemies.push({ ...pos(i), kind: tile === 'n' ? 'snake' : 'bat', direction: 'right', alive: true });
-    if ('O@2nm '.includes(tile)) tiles[i] = '.';
+    if ('O@234nm '.includes(tile)) tiles[i] = '.';
   });
+  // Reserve authored starts first, then find nearby safe floor without crossing obstacles.
+  const starts = markers.slice(0, ids.length), reserved = new Set(starts.filter(index => index >= 0));
+  const blocked = new Set([...rocks, ...enemies].map(p => p.y * width + p.x));
+  const queue = [markers[0]], seen = new Set(queue);
+  for (let head = 0; head < queue.length; head++) {
+    const p = pos(queue[head]);
+    for (const [dx, dy] of [[0, 1], [-1, 0], [0, -1], [1, 0]]) {
+      const x = p.x + dx, y = p.y + dy, index = y * width + x;
+      if (x < 0 || y < 0 || x >= width || y >= level.map.length || seen.has(index) || blocked.has(index) || tiles[index] !== '.') continue;
+      seen.add(index); queue.push(index);
+    }
+  }
+  for (let i = 0; i < starts.length; i++) if (starts[i] < 0) {
+    const index = queue.find(index => !reserved.has(index));
+    if (index === undefined) throw new Error('Não há espaço seguro para todos os jogadores. Adicione inícios 2, 3 e 4 ao mapa.');
+    starts[i] = index; reserved.add(index);
+  }
   return {
     levelId: level.id, width, height: level.map.length, tiles, rocks, enemies, darts: [],
-    players: ids.map((id, i) => ({ id, ...pos(i && second >= 0 ? second : start), checkpoint: pos(i && second >= 0 ? second : start), direction: 'down', nextMove: 0, deadUntil: 0, deaths: 0, exited: false, teleportLock: false, animation: 'idle', animationUntil: 0 })),
+    players: ids.map((id, i) => ({ id, ...pos(starts[i]), checkpoint: pos(starts[i]), direction: 'down', nextMove: 0, deadUntil: 0, deaths: 0, exited: false, teleportLock: false, animation: 'idle', animationUntil: 0 })),
     circuits: structuredClone(level.circuits), teleports: structuredClone(level.teleports),
     tick: 0, diamonds: 0, bonus: 0, totalDiamonds: tiles.filter(t => t === 'd').length,
     totalBonus: tiles.reduce((n, t) => n + (t === 'r' || t === 's' ? 1 : t === '$' ? 3 : 0), 0),

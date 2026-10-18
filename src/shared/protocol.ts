@@ -1,8 +1,8 @@
 import type { GameState, Intent } from './types';
 export interface Member { id: string; name: string; color: string; ready: boolean; connected: boolean }
-export interface RoomInfo { code: string; mode: 'coop' | 'race'; levelId: string; phase: 'lobby' | 'playing' | 'waiting' | 'finished'; players: Member[]; paused: boolean; winner?: string; waitRemaining?: number }
+export interface RoomInfo { code: string; capacity: number; mode: 'coop' | 'race'; levelId: string; phase: 'lobby' | 'playing' | 'waiting' | 'finished'; players: Member[]; paused: boolean; winner?: string; waitRemaining?: number }
 export type ClientMessage =
-  | { type: 'create'; name: string; color: string; mode: 'coop' | 'race'; levelId: string }
+  | { type: 'create'; name: string; color: string; mode: 'coop' | 'race'; levelId: string; capacity?: number }
   | { type: 'join'; code: string; name: string; color: string }
   | { type: 'reconnect'; code: string; token: string }
   | { type: 'ready'; ready: boolean }

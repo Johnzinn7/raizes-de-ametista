@@ -2,9 +2,11 @@
 
 ## Desenvolvimento e LAN
 
-Com Node.js 24 LTS instalado, `npm ci && npm run dev`. Abra `http://localhost:5173`. O Vite escuta em `0.0.0.0` e mostra os IPs de rede. No segundo computador ou celular, use **o mesmo IP do computador servidor**, por exemplo `http://192.168.0.7:5173`. Permita a porta 5173 no firewall da rede privada. Não use `localhost` no segundo aparelho.
+Com Node.js 24 LTS instalado, `npm ci && npm run dev`. Abra `http://localhost:5173`. O Vite escuta em `0.0.0.0` e mostra os IPs de rede. Nos outros computadores ou celulares (até quatro participantes por sala), use **o mesmo IP do computador servidor**, por exemplo `http://192.168.0.7:5173`. Permita a porta 5173 no firewall da rede privada. Não use `localhost` no segundo aparelho.
 
 No Windows sem Node instalado, `powershell -ExecutionPolicy Bypass -File .\Jogar.ps1` prepara Node portátil dentro de `.tools`, confere o SHA-256 oficial e instala as dependências. Não altera o PATH permanente. `-Production` gera o build e inicia o modo produção.
+
+Para jogar em grupo, escolha 2, 3 ou 4 participantes ao criar a sala e compartilhe o código. Todos precisam preencher as vagas e marcar **Estou pronto**. A mesma hospedagem atende co-op e corrida para quatro pessoas, sem portas ou serviços extras.
 
 ## Produção em Node
 

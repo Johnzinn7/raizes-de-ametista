@@ -6,7 +6,7 @@ Jogo original de puzzle e aventura em Canvas 2D, TypeScript e Vite, com servidor
 
 - `src/shared`: tipos, constantes e simulação pura. `step(state, intents)` produz um novo estado a cada 40 ms; nenhum DOM, relógio externo ou aleatoriedade entra nas regras. Movimento: 200 ms. Gravidade: 240 ms.
 - `src/client`: renderizador Canvas com sprites procedurais originais, interpolação, câmera, áudio sintetizado e interface responsiva.
-- `src/server`: HTTP e WebSocket no mesmo processo. Salas de duas pessoas, inventário compartilhado no co-op e duas simulações independentes na corrida. O cliente transmite apenas intenções.
+- `src/server`: HTTP e WebSocket no mesmo processo. Salas de 2 a 4 pessoas, inventário compartilhado no co-op e uma simulação independente por participante na corrida. O cliente transmite apenas intenções.
 - `levels`: 20 arquivos JSON originais, quatro mundos com cinco fases. Circuitos e teleportes são declarativos.
 - `scripts`: desenvolvimento, BFS com a mesma simulação e geração de conteúdo.
 - `tests/game`: Vitest para regras e integração de rede; testes de navegador separados.
@@ -56,14 +56,14 @@ Colete a cota de gemas roxas para dourar o portal. As três estrelas são indepe
 
 Pedras são empurráveis nas quatro direções e caem a cada 240 ms. Água bloqueia o explorador; pedras a transformam em ponte e gelo permite atravessar. Buracos e espinhos matam. Somente uma pedra já em queda esmaga exploradores ou inimigos. Pedras em repouso ficam bloqueadas por inimigos.
 
-## Jogar a dois
+## Jogar com até quatro pessoas
 
-Abra **Multiplayer**, escolha nome, cor, modo e fase, e crie uma sala. Compartilhe o código de quatro letras. A segunda pessoa abre o mesmo endereço, entra pelo código e ambos clicam em **Estou pronto**. O lobby tem emojis rápidos.
+Abra **Multiplayer**, escolha nome, cor, modo, fase e **2, 3 ou 4 participantes** (padrão: 4), e crie uma sala. Compartilhe o código de quatro letras. Todos abrem o mesmo endereço, entram pelo código e clicam em **Estou pronto**. A partida só começa quando todas as vagas escolhidas estiverem preenchidas e prontas. O lobby mostra a ocupação, cores distintas e emojis rápidos. Cada aba tem seus próprios controles; cada aparelho também pode participar.
 
-- **Cooperativo:** mesmo mapa, inventário compartilhado, checkpoints e saída para os dois. Doze fases incluem cofres que exigem um parceiro segurando uma placa.
-- **Corrida:** mapas independentes, fantasma translúcido e progresso do rival. O primeiro a chegar vence; o servidor registra o tempo no ranking por fase.
+- **Cooperativo:** mesmo mapa, inventário compartilhado, checkpoints e saída para toda a equipe. Todos os participantes precisam entrar no portal; quem chega antes aguarda os demais. Doze fases incluem cofres que exigem um parceiro segurando uma placa.
+- **Corrida:** mapas independentes, até três fantasmas translúcidos com as cores dos rivais e o progresso de cada um no HUD. O primeiro a chegar vence; o servidor registra o tempo no ranking por fase.
 
-Somente o anfitrião pausa, reinicia ou avança a sala. A sala espera 30 s quando alguém desconecta, congelando a simulação. Recarregar a mesma aba retoma a sessão pelo token de reconexão. O servidor aceita intenções, nunca posições ou inventário enviados pelo cliente.
+Somente o anfitrião pausa, reinicia ou avança a sala. A sala espera 30 s quando alguém desconecta, congelando a simulação. Recarregar a mesma aba retoma a sessão pelo token de reconexão. Se mais de uma pessoa cair, a partida aguarda todas reconectarem, respeitando os 30 s individuais. Sair deliberadamente durante uma partida encerra a expedição para o grupo. O servidor aceita intenções, nunca posições ou inventário enviados pelo cliente.
 
 Instruções de [LAN, produção, Render e Docker](docs/HOSTING.md). O ranking atual é persistido em `data/rankings-campaign-2.json`; na hospedagem, use disco persistente para conservá-lo entre reinícios. Salas são mantidas em memória por uma única instância Node.
 
@@ -87,7 +87,7 @@ npm run review-campaign
 
 `npm run check` reúne build, Vitest e validação. A suíte de navegador usa o **build existente** servido por `npm start` em porta isolada; execute build antes dela. O CI instala Chromium e executa todos esses checks, exceto o benchmark dependente da máquina.
 
-Evidências de implementação: 71 testes de regras, rede, conteúdo e movimento; dez cenários de navegador; 20/20 fases aprovadas, com reprodução de cada solução. As suítes concluem uma fase inteira no co-op e na corrida em dois navegadores, incluindo vitória, derrota e registro no ranking, e conferem resposta imediata e toques rápidos. Resultados estão em [PROGRESS.md](docs/PROGRESS.md). Os resultados de desempenho por perfil ficam nos [dados brutos](docs/benchmark.json). O perfil móvel usa emulação de viewport/toque no desktop; hardware físico de celular não foi medido.
+Evidências de implementação: 89 testes de regras, rede, conteúdo e movimento; 12 cenários de navegador; 20/20 fases aprovadas, com reprodução de cada solução. As suítes concluem uma fase inteira no co-op e na corrida em dois e quatro navegadores, incluindo reconexão, igualdade dos snapshots, vitória, derrota e registro no ranking, e conferem resposta imediata e toques rápidos. Resultados estão em [PROGRESS.md](docs/PROGRESS.md). Os resultados de desempenho por perfil ficam nos [dados brutos](docs/benchmark.json). O perfil móvel usa emulação de viewport/toque no desktop; hardware físico de celular não foi medido.
 
 ## Empacotar e modificar
 

@@ -76,6 +76,9 @@ Alavancas e placas abrem todos os portões quando não há ligações manuais. T
 | `P` | Checkpoint | `E` | Saída |
 | `s` | Segredo com gema bônus | `*` | Tocha decorativa sólida |
 | `@` | Início do explorador 1 | `2` | Início do explorador 2 |
+| `3` | Início do explorador 3 | `4` | Início do explorador 4 |
+
+Os marcadores `2`, `3` e `4` são opcionais e não podem se repetir. Sem um marcador, a simulação escolhe uma casa de chão livre próxima ao início, por busca determinística, sem sobrepor exploradores ou atravessar obstáculos e perigos. As 20 fases e suas variantes cooperativas têm espaço para quatro jogadores. Em mapas próprios sem espaço, adicione marcadores explícitos; a criação da sala recusa uma equipe que não caiba com segurança.
 
 ## Validador
 

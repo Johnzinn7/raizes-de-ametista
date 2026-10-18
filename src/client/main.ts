@@ -1,5 +1,5 @@
 import './style.css';
-import { CONFIG, GAME_NAME, WORLDS } from '../shared/config';
+import { CONFIG, GAME_NAME, PLAYER_COLORS, WORLDS } from '../shared/config';
 import { createGame, step, stars } from '../shared/engine';
 import type { GameState, Level } from '../shared/types';
 import type { RoomInfo } from '../shared/protocol';
@@ -43,7 +43,7 @@ function showPlaying() {
 function start(level = currentLevel) {
   if (network.room) network.leave();
   currentLevel = level; state = createGame(level); playing = true; paused = false; resultShown = false;
-  input.enabled = true; input.clear(); renderer.focusId = 'solo'; renderer.colors = ['#7da58b', '#ba7e82'];
+  input.enabled = true; input.clear(); renderer.focusId = 'solo'; renderer.colors = [...PLAYER_COLORS];
   renderer.reset(); audio.reset(); audio.unlock(); updateLevel(); showPlaying(); text('#mode-label', 'AVENTURA SOLO');
   document.querySelector('.modal-backdrop')?.remove(); document.querySelector('.peer-status')?.remove(); document.querySelector('.death-banner')?.remove();
   lastTick = performance.now(); $('canvas').focus({ preventScroll: true });
@@ -57,7 +57,7 @@ function home() {
 }
 const isHost = () => network.room?.players[0]?.id === network.id;
 function reset() {
-  if (network.room) { if (isHost()) network.send({ type: 'restart' }); else toast('O anfitrião pode reiniciar a fase para os dois.'); }
+  if (network.room) { if (isHost()) network.send({ type: 'restart' }); else toast('O anfitrião pode reiniciar a fase para toda a equipe.'); }
   else start();
 }
 function pause() {
@@ -89,17 +89,18 @@ function consumeEvents() {
 }
 function peerStatus(room: RoomInfo) {
   let message = '';
-  if (room.phase === 'waiting') message = `Reconectando o parceiro… ${room.waitRemaining ?? 30} s`;
+  if (room.phase === 'waiting') message = `Reconectando a equipe… ${room.waitRemaining ?? 30} s`;
   else if (room.paused) message = 'O anfitrião pausou a expedição.';
   else if (room.mode === 'race' && network.states.length) {
-    const rival = network.states.find(s => !s.players.some(p => p.id === network.id));
-    const member = room.players.find(p => p.id !== network.id);
-    if (rival) message = `${member?.name ?? 'Rival'} · ◆ ${rival.diamonds}/${rival.quota} · ${formatTime(rival.tick * CONFIG.tickMs)}`;
-  } else if (state.players.find(p => p.id === network.id)?.exited && state.status !== 'won') message = 'Você chegou! Esperando o parceiro no portal…';
+    message = room.players.filter(member => member.id !== network.id).map(member => {
+      const rival = network.states.find(s => s.players[0]?.id === member.id);
+      return rival ? `${member.name} · ◆ ${rival.diamonds}/${rival.quota} · ${formatTime(rival.tick * CONFIG.tickMs)}` : '';
+    }).filter(Boolean).join('\n');
+  } else if (state.players.find(p => p.id === network.id)?.exited && state.status !== 'won') message = room.capacity === 2 ? 'Você chegou! Esperando o parceiro no portal…' : `Você chegou! Esperando a equipe no portal… (${state.players.filter(p => p.exited).length}/${room.capacity})`;
   let el = document.querySelector<HTMLElement>('.peer-status');
   if (!message) { el?.remove(); return; }
   if (!el) { el = document.createElement('div'); el.className = 'peer-status'; el.role = 'status'; $('.canvas-wrap').append(el); }
-  el.textContent = message;
+  if (el.textContent !== message) el.textContent = message;
 }
 network.onStatus = message => { toast(message); input.clear(); };
 network.onMessage = message => {
@@ -187,7 +188,10 @@ function frame(now: number) {
   }
   if (steps >= 5) lastTick = now;
   audio.pause(paused || document.hidden);
-  renderer.render(state, now, network.room?.mode === 'race' ? network.states.find(s => s !== state) : undefined); updateHUD();
+  renderer.render(state, now, network.room?.mode === 'race' ? network.states.filter(s => s !== state).map(s => {
+    const index = network.room!.players.findIndex(p => p.id === s.players[0].id);
+    return { state: s, color: network.room!.players[index].color, label: `P${index + 1}` };
+  }) : []); updateHUD();
   if (playing && !resultShown && (state.status === 'won' || network.room?.phase === 'finished')) showResult();
   requestAnimationFrame(frame);
 }

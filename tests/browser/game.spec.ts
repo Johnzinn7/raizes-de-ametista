@@ -38,7 +38,7 @@ for (const mode of ['coop', 'race'] as const) test(`two browser tabs synchronize
   })); observe(a, snapshotsA); observe(b, snapshotsB);
   try {
     await Promise.all([a.goto('http://127.0.0.1:4173/'), b.goto('http://127.0.0.1:4173/')]);
-    await a.getByRole('button', { name: 'Multiplayer', exact: true }).click(); await a.locator('#room-mode').selectOption(mode); await a.locator('#player-name').fill('Lia'); await a.locator('#create-room').click();
+    await a.getByRole('button', { name: 'Multiplayer', exact: true }).click(); await a.locator('#room-mode').selectOption(mode); await a.locator('#room-capacity').selectOption('2'); await a.locator('#player-name').fill('Lia'); await a.locator('#create-room').click();
     const code = await a.getByTestId('room-code').innerText(); expect(code).toMatch(/^[A-Z]{4}$/);
     await b.getByRole('button', { name: 'Multiplayer', exact: true }).click(); await b.locator('#player-name').fill('Nilo'); await b.locator('#join-code').fill(code); await b.locator('#join-room').click();
     await expect(a.getByRole('dialog')).toContainText('Nilo');
@@ -100,6 +100,8 @@ test('solo reacts immediately and keeps quick turns and powers through cooldown'
 
 test('editor paints, validates, imports and exports an actual level', async ({ page }) => {
   await page.goto('/'); await page.getByRole('button', { name: 'Editor', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Jogador 3', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Jogador 4', exact: true })).toBeVisible();
   await page.locator('#editor-name').fill('O templo de teste');
   await page.getByRole('button', { name: 'Diamante', exact: true }).click();
   const canvas = page.locator('.editor-canvas'), bounds = await canvas.boundingBox(); expect(bounds).not.toBeNull();

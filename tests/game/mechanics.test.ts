@@ -26,7 +26,7 @@ describe('rocks and gravity', () => {
       const s = createGame(fixture(base)); s.rocks = [{ x: 2, y: 1, falling: false, id: 1 }]; s.tiles[s.width + 3] = tile;
       expect(step(s, { solo: { direction: 'right' } }).players[0].x).toBe(1);
     }
-    const s = createGame(fixture(base), ['a', 'b'], 'coop'); s.rocks = [{ x: 2, y: 1, falling: false, id: 1 }]; s.players[1].x = 3;
+    const s = createGame(fixture(base), ['a', 'b'], 'coop'); s.rocks = [{ x: 2, y: 1, falling: false, id: 1 }]; Object.assign(s.players[1], { x: 3, y: 1 });
     expect(step(s, { a: { direction: 'right' } }).rocks[0].x).toBe(2);
   });
   it.each([['h', '.'], ['~', '=']])('fills %s and leaves %s', (tile, result) => {

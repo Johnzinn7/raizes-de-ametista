@@ -1,5 +1,5 @@
 import { randomInt, randomUUID } from 'node:crypto';
-import { CONFIG, DIRECTIONS } from '../shared/config';
+import { CONFIG, DIRECTIONS, PLAYER_COLORS } from '../shared/config';
 import { createGame, step } from '../shared/engine';
 import { cooperativeLevel } from '../shared/coop';
 import { EMOJIS, type Member, type RoomInfo, type ServerMessage, type RankingEntry } from '../shared/protocol';
@@ -7,7 +7,7 @@ import type { GameState, Intent, Level } from '../shared/types';
 
 export interface Peer { send(data: string): void; readyState: number; close(): void }
 interface Slot extends Member { token: string; peer?: Peer; disconnectedAt?: number; intent: Intent; tap?: Intent; inputAt: number; seq: number }
-interface Room { code: string; mode: 'coop' | 'race'; levelId: string; phase: RoomInfo['phase']; players: Slot[]; states: GameState[]; paused: boolean; winner?: string; sequence: number; started: boolean }
+interface Room { code: string; capacity: number; mode: 'coop' | 'race'; levelId: string; phase: RoomInfo['phase']; players: Slot[]; states: GameState[]; paused: boolean; winner?: string; sequence: number; started: boolean }
 export class RoomManager {
   readonly rooms = new Map<string, Room>(); private sessions = new Map<Peer, { room: Room; slot: Slot }>();
   private limits = new Map<Peer, { time: number; count: number }>();
@@ -17,7 +17,7 @@ export class RoomManager {
   private error(peer: Peer, message: string) { this.send(peer, { type: 'error', message }); }
   info(room: Room): RoomInfo {
     const disconnected = room.players.filter(p => !p.connected);
-    return { code: room.code, mode: room.mode, levelId: room.levelId, phase: room.phase, paused: room.paused, winner: room.winner,
+    return { code: room.code, capacity: room.capacity, mode: room.mode, levelId: room.levelId, phase: room.phase, paused: room.paused, winner: room.winner,
       waitRemaining: disconnected.length ? Math.max(0, Math.ceil((CONFIG.reconnectMs - (this.now - Math.min(...disconnected.map(p => p.disconnectedAt ?? this.now)))) / 1000)) : undefined,
       players: room.players.map(({ id, name, color, ready, connected }) => ({ id, name, color, ready, connected })) };
   }
@@ -49,15 +49,21 @@ export class RoomManager {
         if (this.rooms.size >= CONFIG.maxRoomCount) { this.error(peer, 'Todas as salas estão ocupadas.'); return; }
         if (v.mode !== 'coop' && v.mode !== 'race') { this.error(peer, 'Modo inválido.'); return; }
         if (!this.levels.some(l => l.id === v.levelId)) { this.error(peer, 'Fase não encontrada.'); return; }
+        const capacity = v.capacity === undefined ? 2 : v.capacity;
+        if (typeof capacity !== 'number' || !Number.isInteger(capacity) || capacity < 2 || capacity > CONFIG.maxPlayers) { this.error(peer, 'Escolha de 2 a 4 jogadores.'); return; }
+        try { if (v.mode === 'coop') createGame(cooperativeLevel(this.levels.find(l => l.id === v.levelId)!), Array.from({ length: capacity }, (_, i) => `spawn-${i}`), 'coop'); }
+        catch { this.error(peer, 'Esta fase não tem espaço seguro para toda a equipe.'); return; }
         let code: string; do { code = Array.from({ length: 4 }, () => String.fromCharCode(65 + randomInt(26))).join(''); } while (this.rooms.has(code));
-        room = { code, mode: v.mode, levelId: v.levelId as string, phase: 'lobby', players: [], states: [], paused: false, sequence: 0, started: false }; this.rooms.set(code, room);
+        room = { code, capacity, mode: v.mode, levelId: v.levelId as string, phase: 'lobby', players: [], states: [], paused: false, sequence: 0, started: false }; this.rooms.set(code, room);
       } else {
         const found = this.rooms.get(String(v.code).toUpperCase());
         if (!found) { this.error(peer, 'Sala não encontrada. Confira as quatro letras.'); return; }
-        if (found.players.length >= 2 || found.phase !== 'lobby') { this.error(peer, 'Esta sala já está ocupada ou em jogo.'); return; }
+        if (found.players.length >= found.capacity || found.phase !== 'lobby') { this.error(peer, 'Esta sala já está ocupada ou em jogo.'); return; }
         room = found;
       }
       const slot: Slot = { ...this.profile(v), id: randomUUID(), token: randomUUID(), ready: false, connected: true, intent: {}, seq: -1, inputAt: this.now };
+      const usedColors = new Set(room.players.map(p => p.color.toLowerCase()));
+      if (usedColors.has(slot.color.toLowerCase())) slot.color = PLAYER_COLORS.find(color => !usedColors.has(color))!;
       room.players.push(slot); this.attach(peer, room, slot); return;
     }
     if (v.type === 'reconnect') {
@@ -76,14 +82,14 @@ export class RoomManager {
       if (v.press === true && (slot.intent.direction || slot.intent.action)) slot.tap = { ...slot.intent };
     } else if (v.type === 'ready' && room.phase === 'lobby') {
       slot.ready = v.ready === true;
-      if (room.players.length === 2 && room.players.every(p => p.ready && p.connected)) this.start(room);
+      if (room.players.length === room.capacity && room.players.every(p => p.ready && p.connected)) this.start(room);
       this.roomUpdate(room);
     } else if (v.type === 'emoji' && EMOJIS.includes(v.emoji as typeof EMOJIS[number])) this.broadcast(room, { type: 'emoji', id: slot.id, emoji: v.emoji as string });
     else if (v.type === 'leave') { this.remove(room, slot); }
     else if (room.players[0] === slot) {
       if (v.type === 'pause') { room.paused = v.paused === true; room.players.forEach(p => { p.intent = {}; p.tap = undefined; }); this.roomUpdate(room); }
-      if (v.type === 'restart' && room.players.length === 2 && room.players.every(p => p.connected)) this.start(room);
-      if (v.type === 'next' && room.phase === 'finished') {
+      if (v.type === 'restart' && room.started && room.players.length === room.capacity && room.players.every(p => p.connected)) this.start(room);
+      if (v.type === 'next' && room.phase === 'finished' && room.players.every(p => p.connected)) {
         const i = this.levels.findIndex(l => l.id === room.levelId); room.levelId = this.levels[(i + 1) % this.levels.length].id; this.start(room);
       }
     }
@@ -97,7 +103,7 @@ export class RoomManager {
     if (slot.peer) this.sessions.delete(slot.peer);
     room.players = room.players.filter(p => p !== slot);
     if (!room.players.length) this.rooms.delete(room.code);
-    else if (room.started) { this.broadcast(room, { type: 'closed', message: 'A outra pessoa saiu da expedição.' }); for (const p of room.players) if (p.peer) this.sessions.delete(p.peer); this.rooms.delete(room.code); }
+    else if (room.started) { this.broadcast(room, { type: 'closed', message: 'Um participante saiu da expedição. Reúna a equipe em uma nova sala.' }); for (const p of room.players) if (p.peer) this.sessions.delete(p.peer); this.rooms.delete(room.code); }
     else this.roomUpdate(room);
   }
   disconnect(peer: Peer) {

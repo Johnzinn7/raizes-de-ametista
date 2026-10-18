@@ -1,4 +1,4 @@
-import { CONFIG, WORLDS } from '../shared/config';
+import { CONFIG, PLAYER_COLORS, WORLDS } from '../shared/config';
 import { at, pointKey, spikePhase } from '../shared/engine';
 import type { GameState, GameEvent } from '../shared/types';
 import { Atlas, hash, rock } from './art';
@@ -6,6 +6,7 @@ import type { Facing } from './explorer';
 import { GridMotion, dampCamera } from './motion';
 interface Particle { x: number; y: number; vx: number; vy: number; life: number; color: string; leaf?: boolean; angle?: number; spin?: number }
 interface Clearing { x: number; y: number; age: number; variant: number }
+export interface Ghost { state: GameState; color: string; label: string }
 interface Pose { facing: Facing; animation: string; elapsed: number; frame: number }
 export class Renderer {
   private c: CanvasRenderingContext2D;
@@ -20,7 +21,7 @@ export class Renderer {
   private poses = new Map<string, Pose>();
   private width = 640; private height = 480; private scale = 1.7;
   private shake = 0; private eventTick = -1; private lastTime = 0; private fade = 1;
-  effects = true; world = 0; focusId = 'solo'; colors = ['#6d9e87', '#ba7e82'];
+  effects = true; world = 0; focusId = 'solo'; colors: string[] = [...PLAYER_COLORS];
   fps = 60;
   constructor(readonly canvas: HTMLCanvasElement) { this.c = canvas.getContext('2d', { alpha: false })!; }
   reset() { this.positions.clear(); this.motions.clear(); this.poses.clear(); this.particles = []; this.clearings = []; this.fade = 1; this.eventTick = -1; this.cameraReady = false; this.cameraVelocity = { x: 0, y: 0 }; }
@@ -82,7 +83,7 @@ export class Renderer {
       c.restore();
     }
   }
-  render(state: GameState, time: number, ghost?: GameState) {
+  render(state: GameState, time: number, ghosts: Ghost[] = []) {
     this.resize();
     const dt = Math.min(.05, (time - this.lastTime) / 1000 || .016); this.lastTime = time;
     for (const clearing of this.clearings) clearing.age += dt;
@@ -149,10 +150,18 @@ export class Renderer {
       c.drawImage(this.atlas.player(p.direction, pose.frame, this.colors[i] ?? this.colors[0], p.animation, pose.facing), Math.round(pos.x), Math.round(pos.y), tile, tile);
       if (state.players.length > 1) { c.fillStyle = '#fff1ca'; c.font = '8px monospace'; c.textAlign = 'center'; c.fillText(`P${i + 1}`, pos.x + 16, pos.y - 3); }
     }
-    if (ghost) {
-      const p = ghost.players[0]; c.save(); c.globalAlpha = .35;
-      const pose = this.pose(`ghost/${p.id}`, p.direction, p.animation, dt);
-      c.drawImage(this.atlas.player(p.direction, pose.frame, '#e4b2df', p.animation, pose.facing), p.x * tile, p.y * tile, tile, tile); c.restore();
+    this.canvas.dataset.ghosts = String(ghosts.length);
+    for (const ghost of ghosts) {
+      const p = ghost.state.players[0];
+      if (p.deadUntil || p.exited) continue;
+      const key = `ghost/${p.id}`, target = { x: p.x * tile, y: p.y * tile };
+      const motion = this.motions.get(key) ?? new GridMotion(target);
+      this.motions.set(key, motion); const pos = motion.update(target, dt);
+      c.save(); c.globalAlpha = .35;
+      const pose = this.pose(key, p.direction, p.animation, dt);
+      c.drawImage(this.atlas.player(p.direction, pose.frame, ghost.color, p.animation, pose.facing), Math.round(pos.x), Math.round(pos.y), tile, tile);
+      c.fillStyle = ghost.color; c.font = '8px monospace'; c.textAlign = 'center';
+      c.fillText(ghost.label, pos.x + 16, pos.y - 3); c.restore();
     }
     this.drawClearings(true);
     for (const p of this.particles) {
